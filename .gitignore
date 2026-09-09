@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Generated extension packages
+dist/
+*.zip
+
+# Test output
+coverage/
+
+# Local and OS files
+.DS_Store
+*.log
