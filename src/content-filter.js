@@ -12,7 +12,7 @@ function isSiteIcon(img) {
 }
 
 export function excludedContent(source) {
-  const omitted = new Set(source.querySelectorAll(CITATIONS));
+  const omitted = new Set(source.querySelectorAll(`${CITATIONS},h4.sr-only`));
   for (const link of source.querySelectorAll('a')) {
     // Citation pills commonly live in not-prose spans and contain a site icon.
     const icon = [...link.querySelectorAll('img')].some(isSiteIcon);

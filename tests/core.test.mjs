@@ -51,10 +51,10 @@ test('rendered header uses the plugin credit and embedded logo', async () => {
 });
 
 test('answer previews inside native dialogs and menus are not export targets', () => {
-  const answer = closestResult => ({ textContent: 'answer', closest: () => closestResult });
+  const answer = (closestResult, textContent = 'answer') => ({ textContent, closest: () => closestResult, cloneNode() { return { textContent, querySelectorAll: () => [] }; } });
   assert.equal(isExportableAnswer(answer(null)), true);
   assert.equal(isExportableAnswer(answer({ role: 'dialog' })), false);
-  assert.equal(isExportableAnswer({ textContent: '   ', closest: () => null }), false);
+  assert.equal(isExportableAnswer(answer(null, '   ')), false);
 });
 
 test('copied math foreground follows the export theme', () => {
