@@ -1,6 +1,6 @@
 # Privacy Policy for Answer Imagifier - for ChatGPT
 
-Effective date: September 9, 2026
+Effective date: September 21, 2026
 
 Answer Imagifier - for ChatGPT (the "Extension") creates PNG or JPG images from ChatGPT answers. This policy explains how the Extension handles information.
 
@@ -27,11 +27,11 @@ Page resources needed to reproduce visible content, such as eligible fonts or gr
 
 ## Storage and retention
 
-The Extension does not persist conversation content or user settings. Generated image data remains in browser memory only while the export panel is open. It is released when the panel closes or the page unloads. An image leaves browser memory only when you choose to download it or copy it to the clipboard; the resulting file or clipboard item is then controlled by you and your device.
+The Extension stores export preferences (theme, format, width, quality, font size, compact layout, and whether to include the prompt) locally using chrome.storage.local. These preferences persist across browser restarts and are not synced through Chrome or transmitted to the developer. Uninstalling the Extension removes this stored data. Conversation content, custom file names, and generated images are not saved in extension storage. Generated image data remains in browser memory only while the export panel is open. It is released when the panel closes or the page unloads. An image leaves browser memory only when you choose to download it or copy it to the clipboard; the resulting file or clipboard item is then controlled by you and your device.
 
 ## Permissions
 
-The Extension does not request optional Chrome API permissions. Its site access is limited by the extension manifest to ChatGPT pages on `chatgpt.com` and `chat.openai.com`.
+The Extension requests the storage permission solely to save and restore export preferences. Its site access is limited by the extension manifest to ChatGPT pages on `chatgpt.com` and `chat.openai.com`.
 
 ## Third-party services
 

@@ -4,7 +4,7 @@ import { parseHTML } from 'linkedom';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { excludedContent } from '../src/content-filter.js';
-import { getAnswers, getPrompt, getTurn, getActionRow } from '../src/dom.js';
+import { getAnswers, getPrompt, getTurn, getActionRow, isAnswerReady, isStreaming, STREAMING_SELECTOR } from '../src/dom.js';
 
 const fixture = `<div data-content-search-turn-key="one">
 <div data-content-search-unit-key="one:0:user"><h4 class="sr-only">You said:</h4><p>First prompt</p></div>
@@ -43,8 +43,7 @@ test('content script reuses buttons, handles replaced answers and streaming comp
   const source = (await readFile('src/content.js', 'utf8')).replace(/^import .*;\n/gm, '');
   runInNewContext(source, {
     document, Element: window.Element, PLUGIN_NAME: 'Test', locale: 'en', t: () => 'Export image',
-    getAnswers, getPrompt, getTurn, getActionRow, STREAMING_SELECTOR: '[data-is-streaming="true"]',
-    isStreaming: () => !!document.querySelector('[data-is-streaming="true"]'),
+    getAnswers, getPrompt, getTurn, getActionRow, isAnswerReady, STREAMING_SELECTOR, isStreaming,
     openPanel: answer => opened.push(answer), exportIcon: '<svg></svg>',
     MutationObserver: class { constructor(callback) { observer = callback; } observe() {} },
     setTimeout: callback => { scheduled = callback; return 1; },
@@ -71,7 +70,19 @@ test('content script reuses buttons, handles replaced answers and streaming comp
   assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 1);
   document.querySelector('#answer-actions').remove();
   rescan();
-  assert.equal(document.querySelector('#answer').nextElementSibling.getAttribute('data-answer-imagifier'), 'export');
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
+  document.querySelector('#answer p').textContent += ' still streaming';
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
+  const row = document.createElement('div');
+  row.className = 'turn-action-controls';
+  row.innerHTML = '<button aria-label="Copy"></button>';
+  document.querySelector('#answer').after(row);
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 1);
+  document.querySelector('#answer').setAttribute('data-is-streaming', 'true');
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
 });
 
 test('hidden speaker headings are omitted and do not make an empty answer exportable', () => {
@@ -80,4 +91,17 @@ test('hidden speaker headings are omitted and do not make an empty answer export
   assert.ok(excludedContent(answer).has(answer.querySelector('h4')));
   answer.innerHTML = '<h4 class="sr-only">ChatGPT said:</h4>';
   assert.equal(getAnswers().length, 0);
+});
+
+test('new answers wait for native actions even when old streaming markers are absent', () => {
+  const { document } = setup(fixture);
+  const answer = document.querySelector('#answer');
+  assert.equal(isAnswerReady(answer), true);
+  document.querySelector('#answer-actions').innerHTML = '<button data-answer-imagifier="export">Export image</button>';
+  assert.equal(isAnswerReady(answer), false);
+  document.querySelector('#answer-actions').remove();
+  assert.equal(isStreaming(), false);
+  assert.equal(isAnswerReady(answer), false);
+  answer.querySelector('p').textContent += ' more tokens';
+  assert.equal(isAnswerReady(answer), false);
 });

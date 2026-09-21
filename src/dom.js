@@ -48,6 +48,14 @@ export function getActionRow(answer, turn = getTurn(answer)) {
       (answer.compareDocumentPosition(message) & 4) && (message.compareDocumentPosition(row) & 4));
   }) || null;
 }
+// The new layout renders its native answer actions when the response is ready.
+// Text alone is not a completion signal: streaming and tool pauses also have text.
+export function isAnswerReady(answer) {
+  if (isStreaming()) return false;
+  if (!answer.closest('[data-content-search-turn-key]')) return true;
+  const row = getActionRow(answer);
+  return Boolean(row?.querySelector('button:not([data-answer-imagifier])'));
+}
 export function element(tag, className, text) {
   const el = document.createElement(tag);
   if (className) el.className = className;

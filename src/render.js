@@ -1,12 +1,12 @@
 import { PLUGIN_NAME, t } from './i18n.js';
 import { toCanvas, getFontEmbedCSS } from 'html-to-image';
 import mermaid from 'mermaid';
-import hljs from 'highlight.js/lib/common';
 import { element, getAnswerRoot, getPrompt, exportScale } from './dom.js';
+import { preserveChecklist } from './checklist.js';
 import { excludedContent } from './content-filter.js';
 import { roundExport } from './image-style.js';
 import { inheritMathForeground } from './math-style.js';
-import { detectCodeLanguage } from './code-language.js';
+import { getCodeBlocks, createCodeBlock } from './code-block.js';
 import openaiLogo from './assets/openai-logo.svg';
 import pluginLogo from '../public/icons/icon128.png';
 
@@ -57,6 +57,7 @@ function cloneContent(source, warnings) {
       catch { copy.replaceWith(element('p', 'asset-warning', t('chartBlocked'))); warnings.push(t('chartsBlocked')); }
     }
   });
+  preserveChecklist(clone, sourceByCopy);
   clone.querySelectorAll('script,style,link,meta').forEach(el => el.remove());
   clone.querySelectorAll('button,input,textarea,select,[role="button"],[hidden],[aria-hidden="true"]:not(.katex-html)').forEach(el => {
     // KaTeX's visual HTML is aria-hidden because its MathML is the accessible equivalent.
@@ -67,7 +68,7 @@ function cloneContent(source, warnings) {
     warnings.push(t('embedsReplaced'));
   });
   // Replace ChatGPT code toolbars and nested scrolling containers with a plain code block.
-  [...clone.querySelectorAll('pre')].forEach(pre => {
+  getCodeBlocks(clone).forEach(pre => {
     const original = sourceByCopy.get(pre);
     const nativeDiagram = original.querySelector('[data-code-block-preview-pane="mermaid"] img');
     if (nativeDiagram && /^data:image\/svg\+xml[;,]/i.test(nativeDiagram.currentSrc || nativeDiagram.src)) {
@@ -81,16 +82,7 @@ function cloneContent(source, warnings) {
       pre.replaceWith(diagram);
       return;
     }
-    const codeSource = original.querySelector('code') || original;
-    const language = detectCodeLanguage(original, codeSource, candidate => Boolean(hljs.getLanguage(candidate)));
-    pre.replaceChildren();
-    if (language) pre.append(element('span', 'code-label', language));
-    const code = element('code', '', codeSource.textContent);
-    code.dataset.language = language;
-    if (language && language !== 'mermaid' && hljs.getLanguage(language)) {
-      code.innerHTML = hljs.highlight(codeSource.textContent, { language, ignoreIllegals: true }).value;
-    }
-    pre.append(code);
+    pre.replaceWith(createCodeBlock(original));
   });
   // Remove empty wrappers left by citation pills, without disturbing SVG or formula layout.
   [...clone.querySelectorAll('span,a,p,div')].reverse().forEach(el => {

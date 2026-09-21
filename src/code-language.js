@@ -71,6 +71,11 @@ function nearbyHeaderText(container, code) {
 export function detectCodeLanguage(container, code, supportsLanguage) {
   const attributedElements = [container, code, ...(container.querySelectorAll?.('[data-language],[data-lang],[lang],[class*="language-"],[class*="lang-"]') || [])];
   const candidates = attributedElements.flatMap(candidatesFromAttributes);
+  const block = container.closest?.('[data-markdown-copy="code-block"]');
+  if (block) {
+    const header = block.querySelector('[data-markdown-copy="exclude"]');
+    candidates.push(...shortLeafText(header, code));
+  }
   candidates.push(...nearbyHeaderText(container, code));
 
   for (const candidate of candidates) {

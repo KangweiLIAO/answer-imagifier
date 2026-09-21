@@ -34,12 +34,12 @@ test('export controls for typography, spacing, and file names are bundled', asyn
   assert.match(bundle, /data-font-size/);
   assert.match(bundle, /data-compact/);
 });
-test('extension only injects on ChatGPT and requires no privileged permissions', async () => {
+test('extension only injects on ChatGPT and only requests settings storage permission', async () => {
   const manifest = JSON.parse(await readFile('dist/manifest.json'));
   assert.equal(manifest.name, 'Answer Imagifier - for ChatGPT');
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.content_scripts[0].matches, ['https://chatgpt.com/*', 'https://chat.openai.com/*']);
-  assert.equal(manifest.permissions, undefined);
+  assert.deepEqual(manifest.permissions, ['storage']);
   assert.equal(manifest.host_permissions, undefined);
 });
 

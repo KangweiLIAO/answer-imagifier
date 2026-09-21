@@ -1,5 +1,5 @@
 import { PLUGIN_NAME, t, locale } from './i18n.js';
-import { getAnswers, getTurn, getActionRow, STREAMING_SELECTOR, isStreaming } from './dom.js';
+import { getAnswers, getTurn, getActionRow, isAnswerReady, STREAMING_SELECTOR, isStreaming } from './dom.js';
 import { openPanel, exportIcon } from './panel.js';
 
 const marker = 'data-answer-imagifier';
@@ -23,7 +23,7 @@ function makeButton(targetAnswer) {
   button.addEventListener('mouseleave', () => { button.style.background = 'transparent'; });
   button.addEventListener('click', event => {
     event.preventDefault(); event.stopPropagation();
-    if (isStreaming()) return;
+    if (!isAnswerReady(targetAnswer)) return;
     if (targetAnswer.isConnected) openPanel(targetAnswer);
   });
   return button;
@@ -48,11 +48,6 @@ function placeAnswerButton(answer, turn) {
     if (button.parentElement !== actionRow || actionRow.lastElementChild !== button) actionRow.append(button);
     return;
   }
-  // A new-layout turn includes user actions too; never use those as fallback.
-  if (turn.hasAttribute('data-content-search-turn-key')) {
-    if (answer.nextElementSibling !== button) answer.after(button);
-    return;
-  }
   const actions = [...turn.querySelectorAll('button')].filter(el => !answer.contains(el) && isNativeAction(el));
   if (!actions.length) {
     if (answer.nextElementSibling !== button) answer.after(button);
@@ -67,8 +62,7 @@ function placeAnswerButton(answer, turn) {
   if (last.nextElementSibling !== button) last.after(button);
 }
 function scan() {
-  if (isStreaming()) return;
-  const answers = getAnswers();
+  const answers = getAnswers().filter(isAnswerReady);
   for (const [answer, button] of buttons) {
     if (!answers.includes(answer)) { button.remove(); buttons.delete(answer); }
   }

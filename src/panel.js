@@ -3,6 +3,7 @@ import panelCSS from './panel.css';
 import cardCSS from './card.css';
 import { element, getAnswers, fileName, isStreaming } from './dom.js';
 import { createCard, rasterize } from './render.js';
+import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
 import { CORNER_RADIUS } from './image-style.js';
 
 export const exportIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h5m-2 4 2 2 3-4"/></svg>';
@@ -13,7 +14,7 @@ export function openPanel(preselected) {
   active = true;
   const answers = getAnswers();
   const answer = preselected && answers.includes(preselected) ? preselected : answers.at(-1);
-  const options = { theme: 'light', width: 760, scale: 2, format: 'png', fontSize: 'standard', prompt: false, compact: false };
+  const options = { ...DEFAULT_SETTINGS };
   const defaultFileName = document.title.trim().replace(/\s+[-–—|]\s+ChatGPT$/i, '').trim();
   const host = element('div'); host.id = 'answer-imagifier-root'; host.lang = locale === 'zh' ? 'zh-CN' : 'en';
   const shadow = host.attachShadow({ mode: 'open' });
@@ -100,10 +101,11 @@ export function openPanel(preselected) {
     const group = button.parentElement;
     options[group.dataset.option] = button.dataset.value;
     group.querySelectorAll('button').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    saveSettings(options);
     schedule();
   }));
   for (const name of ['width', 'scale', 'prompt', 'compact']) $(`#${name}`).addEventListener('change', event => {
-    options[name] = ['prompt', 'compact'].includes(name) ? event.target.checked : Number(event.target.value); schedule();
+    options[name] = ['prompt', 'compact'].includes(name) ? event.target.checked : Number(event.target.value); saveSettings(options); schedule();
   });
   $('.save').addEventListener('click', () => {
     if (!result) return;
@@ -142,5 +144,20 @@ export function openPanel(preselected) {
   $('.close').addEventListener('click', close);
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
   dialog.addEventListener('click', event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) close(); } });
-  dialog.showModal(); schedule();
+  const controls = [...shadow.querySelectorAll('.sidebar button,.sidebar select,.sidebar input')];
+  controls.forEach(control => { control.disabled = true; });
+  dialog.showModal();
+  loadSettings().then(saved => {
+    if (closed) return;
+    Object.assign(options, saved);
+    shadow.querySelectorAll('.segments').forEach(group => {
+      group.querySelectorAll('button').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.value === options[group.dataset.option]));
+      });
+    });
+    for (const name of ['width', 'scale']) $(`#${name}`).value = String(options[name]);
+    for (const name of ['prompt', 'compact']) $(`#${name}`).checked = options[name];
+    controls.forEach(control => { control.disabled = false; });
+    schedule();
+  });
 }
