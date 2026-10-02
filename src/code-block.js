@@ -10,8 +10,10 @@ export function createCodeBlock(original) {
   const editor = original.querySelector('.cm-content');
   const codeSource = editor || original.querySelector('pre code,code,pre') || original;
   // CodeMirror lines are sibling divs: textContent alone loses all newlines.
-  const text = editor
-    ? [...editor.querySelectorAll('.cm-line')].map(line => line.textContent).join('\n')
+  // Read-only viewers can instead contain plain <code> with literal newlines.
+  const lines = editor ? [...editor.querySelectorAll('.cm-line')] : [];
+  const text = lines.length
+    ? lines.map(line => line.textContent).join('\n')
     : codeSource.textContent;
   const language = detectCodeLanguage(original, codeSource, candidate => Boolean(hljs.getLanguage(candidate)));
   const pre = original.ownerDocument.createElement('pre');

@@ -33,3 +33,13 @@ test('legacy code, unknown languages, and Mermaid retain their content', () => {
   assert.equal(results[2].querySelector('code').dataset.language,'mermaid');
   assert.equal(results[2].querySelector('code').textContent,'graph TD\n A-->B');
 });
+test('read-only CodeMirror pre preserves plain text without cm-line elements', () => {
+  const text = '2023      Chat AI\n             ↓\n2024      AI + Tools / RAG\n             ↓\n2025      Agent + MCP + Apps\n             ↓\n2026      Prompt → App\n          Generative UI\n          Personalized context\n             ↓\n下一阶段    Persistent personal software\n          ↓\n          软件根据你的使用持续重构';
+  const source = root(`<pre class="overflow-visible! px-0!"><div><button aria-label="Copy">Copy</button><div id="code-block-viewer" class="cm-editor"><div class="cm-scroller"><pre class="cm-content readonly"><code><span>${text}</span></code></pre></div></div></div></pre>`);
+  const blocks = getCodeBlocks(source);
+  assert.equal(blocks.length, 1);
+  const result = createCodeBlock(blocks[0]);
+  assert.equal(result.querySelector('code').textContent, text);
+  assert.equal(result.querySelectorAll('pre,button').length, 0);
+  assert.equal(result.querySelector('.code-label'), null);
+});

@@ -2,7 +2,13 @@ import { PLUGIN_NAME, t } from './i18n.js';
 import { toCanvas, getFontEmbedCSS } from 'html-to-image';
 import mermaid from 'mermaid';
 import { element, getAnswerRoot, getPrompt, exportScale } from './dom.js';
+import { preserveFormControls } from './form-controls.js';
 import { preserveChecklist } from './checklist.js';
+import { preserveComponents } from './components.js';
+import { baseFontSize, validLayout, recommendedWidth, hasLayoutOverflow } from './layout.js';
+import { preserveVisualAssets } from './visual-assets.js';
+import { applyImageWidths } from './image-width.js';
+import { preserveBlockSpacing } from './block-spacing.js';
 import { excludedContent } from './content-filter.js';
 import { roundExport } from './image-style.js';
 import { inheritMathForeground } from './math-style.js';
@@ -32,6 +38,7 @@ function cloneContent(source, warnings) {
     if (!(copy instanceof Element)) return;
     if (omitted.has(original)) { copy.remove(); return; }
     if (copy !== clone && !clone.contains(copy)) return;
+    if (original.matches('.katex-display,mjx-container[display="true"],math[display="block"]')) copy.setAttribute('data-export-display-math', '');
     const math = original.closest('.katex, mjx-container, math');
     const svg = original.closest('svg');
     // Only math and existing vector charts need the host's layout styles.
@@ -52,16 +59,22 @@ function cloneContent(source, warnings) {
       copy.src = original.currentSrc || original.src;
       copy.removeAttribute('srcset'); copy.removeAttribute('loading');
     }
+    if (original instanceof HTMLImageElement || (original.localName === 'svg' && !original.parentElement?.closest('svg'))) {
+      copy.setAttribute('data-export-source-width', String(original.getBoundingClientRect().width));
+    }
     if (original instanceof HTMLCanvasElement) {
-      try { const img = element('img'); img.src = original.toDataURL(); img.alt = t('chart'); copy.replaceWith(img); }
+      try { const img = element('img'); img.src = original.toDataURL(); img.alt = t('chart'); img.setAttribute('data-export-source-width', String(original.getBoundingClientRect().width)); copy.replaceWith(img); }
       catch { copy.replaceWith(element('p', 'asset-warning', t('chartBlocked'))); warnings.push(t('chartsBlocked')); }
     }
   });
+  preserveVisualAssets(clone, sourceByCopy);
+  preserveFormControls(clone, sourceByCopy);
   preserveChecklist(clone, sourceByCopy);
+  preserveComponents(clone, sourceByCopy);
   clone.querySelectorAll('script,style,link,meta').forEach(el => el.remove());
   clone.querySelectorAll('button,input,textarea,select,[role="button"],[hidden],[aria-hidden="true"]:not(.katex-html)').forEach(el => {
     // KaTeX's visual HTML is aria-hidden because its MathML is the accessible equivalent.
-    if (!el.closest('[data-math]')) el.remove();
+    if (!el.closest('[data-math],[data-export-icon]')) el.remove();
   });
   clone.querySelectorAll('iframe,video,audio,object,embed').forEach(el => {
     el.replaceWith(element('p', 'asset-warning', t('embedBlocked')));
@@ -78,6 +91,7 @@ function cloneContent(source, warnings) {
       const img = element('img');
       img.src = nativeDiagram.currentSrc || nativeDiagram.src;
       img.alt = nativeDiagram.getAttribute('aria-label') || t('chart');
+      img.setAttribute('data-export-source-width', String(nativeDiagram.getBoundingClientRect().width));
       diagram.append(img);
       pre.replaceWith(diagram);
       return;
@@ -86,7 +100,7 @@ function cloneContent(source, warnings) {
   });
   // Remove empty wrappers left by citation pills, without disturbing SVG or formula layout.
   [...clone.querySelectorAll('span,a,p,div')].reverse().forEach(el => {
-    if (!el.closest('[data-math],svg') && !el.textContent.trim() && !el.querySelector('img,svg,canvas,math,br,hr')) el.remove();
+    if (!el.closest('[data-math],svg,[data-export-form-control]') && !el.hasAttribute('data-export-component') && !el.textContent.trim() && !el.querySelector('img,svg,canvas,math,br,hr,[data-export-component]')) el.remove();
   });
   return clone;
 }
@@ -113,12 +127,14 @@ async function prepareImages(card, warnings) {
 }
 
 export async function createCard(answer, options, mount) {
+  if (!validLayout(options)) throw new Error(t('invalidLayout'));
   const warnings = [];
   const card = element('article', 'ai-card');
   card.dataset.theme = options.theme;
   card.dataset.fontSize = options.fontSize;
-  card.dataset.compact = String(options.compact);
-  card.style.width = `${options.width}px`;
+  card.dataset.spacing = ['small', 'large'].includes(options.spacing) ? options.spacing : 'standard';
+  card.style.width = `${options.widthMode === 'auto' ? 760 : options.width}px`;
+  card.style.setProperty('--body-font-size', `${baseFontSize(options)}px`);
   const header = element('header', 'card-header');
   const brand = element('span', 'wordmark');
   const logo = element('span', 'brand-logo');
@@ -130,13 +146,16 @@ export async function createCard(answer, options, mount) {
   logo.querySelectorAll('path').forEach(path => { path.style.fill = options.theme === 'dark' ? '#f0f0f0' : '#202020'; });
   logo.setAttribute('aria-hidden', 'true');
   brand.append(logo, element('span', '', 'ChatGPT'));
-  const credit = element('span', 'credit');
-  const pluginMark = element('img', 'plugin-logo');
-  pluginMark.src = pluginLogo;
-  pluginMark.alt = '';
-  pluginMark.setAttribute('aria-hidden', 'true');
-  credit.append(element('span', '', `by Chrome extension: ${PLUGIN_NAME}`), pluginMark);
-  header.append(brand, credit);
+  header.append(brand);
+  if (options.showCredit !== false) {
+    const credit = element('span', 'credit');
+    const pluginMark = element('img', 'plugin-logo');
+    pluginMark.src = pluginLogo;
+    pluginMark.alt = '';
+    pluginMark.setAttribute('aria-hidden', 'true');
+    credit.append(element('span', '', `by Chrome extension: ${PLUGIN_NAME}`), pluginMark);
+    header.append(credit);
+  }
   card.append(header);
   {
     const section = element('section', 'answer');
@@ -161,24 +180,35 @@ export async function createCard(answer, options, mount) {
     }
   }
   await prepareImages(card, warnings);
+  if (options.widthMode === 'auto') card.style.width = `${recommendedWidth(card, options)}px`;
+  applyImageWidths(card, options.diagramSize);
+  preserveBlockSpacing(card);
+  if (options.widthMode === 'auto') {
+    while (hasLayoutOverflow(card) && parseFloat(card.style.width) < 1600) {
+      card.style.width = `${Math.min(1600, parseFloat(card.style.width) + 80)}px`;
+    }
+  }
+  if (hasLayoutOverflow(card)) warnings.push(t('layoutOverflow'));
+  if (options.widthMode === 'custom' && options.width < recommendedWidth(card, options)) warnings.push(t('narrowLayout'));
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   return { card, warnings: [...new Set(warnings)] };
 }
 
 export async function rasterize(card, options) {
+  const width = Math.ceil(card.getBoundingClientRect().width);
   const height = Math.ceil(card.getBoundingClientRect().height);
-  const ratio = exportScale(options.width, height, options.scale);
+  const ratio = exportScale(width, height, options.scale);
   let fontEmbedCSS = '';
   // Math typesetting may use web fonts that must survive the SVG image boundary.
   if (card.querySelector('[data-math]')) {
     fontEmbedCSS = await timeout(getFontEmbedCSS(card, { preferredFontFormat: 'woff2' }), 15000, t('mathFontTimeout'));
   }
   const canvas = await toCanvas(card, {
-    width: options.width, height, pixelRatio: ratio, fontEmbedCSS,
+    width, height, pixelRatio: ratio, fontEmbedCSS,
     backgroundColor: options.theme === 'dark' ? '#212121' : '#ffffff',
     skipAutoScale: true,
   });
   roundExport(canvas, options.format, options.theme, ratio);
   const blob = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error(t('imageFailed'))), options.format === 'jpg' ? 'image/jpeg' : 'image/png', 0.95));
-  return { blob, width: canvas.width, height: canvas.height, reduced: ratio < options.scale - 0.01 };
+  return { blob, layoutWidth: width, width: canvas.width, height: canvas.height, reduced: ratio < options.scale - 0.01 };
 }

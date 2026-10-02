@@ -29,10 +29,10 @@ test('download names do not contain invalid filename characters', () => {
 test('export controls for typography, spacing, and file names are bundled', async () => {
   const bundle = await readFile('dist/content.js', 'utf8');
   assert.match(bundle, /data-option="fontSize"/);
-  assert.match(bundle, /id="compact"/);
+  assert.doesNotMatch(bundle, /id="compact"/);
   assert.match(bundle, /id="filename"/);
   assert.match(bundle, /data-font-size/);
-  assert.match(bundle, /data-compact/);
+  assert.doesNotMatch(bundle, /data-compact/);
 });
 test('extension only injects on ChatGPT and only requests settings storage permission', async () => {
   const manifest = JSON.parse(await readFile('dist/manifest.json'));

@@ -12,7 +12,9 @@ function isSiteIcon(img) {
 }
 
 export function excludedContent(source) {
-  const omitted = new Set(source.querySelectorAll(`${CITATIONS},h4.sr-only`));
+  const omitted = new Set(source.querySelectorAll(`${CITATIONS},.sr-only,.visually-hidden,[role="tooltip"],.recharts-tooltip-wrapper,[data-d-component="tooltip"]`));
+  // Screen-reader chart data and transient hover overlays are not visible
+  // answer content. Filter before their host classes are stripped.
   for (const link of source.querySelectorAll('a')) {
     // Citation pills commonly live in not-prose spans and contain a site icon.
     const icon = [...link.querySelectorAll('img')].some(isSiteIcon);
@@ -25,6 +27,9 @@ export function excludedContent(source) {
   // Image generation has its own native download flow. Omit its controls and
   // assets, while retaining ordinary SVG and Canvas charts in the answer.
   for (const image of source.querySelectorAll('img,picture,[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation]')) {
+    if (image.matches('img[data-d-component="svg"]') &&
+        /^data:image\/svg\+xml[;,]/i.test(image.currentSrc || image.getAttribute('src') || '') &&
+        !image.closest('[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation]')) continue;
     omitted.add(image);
   }
   return omitted;

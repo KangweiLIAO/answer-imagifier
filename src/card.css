@@ -16,10 +16,102 @@
 .ai-card .native-diagram img{margin:0 auto}
 .ai-card .wordmark{display:inline-flex;align-items:center;gap:6px}.ai-card .brand-logo{display:inline-flex;width:28px;height:28px;flex:none}.ai-card .brand-logo svg{width:28px;height:28px}.ai-card .brand-logo path{fill:currentColor}
 
-.ai-card[data-font-size=small]{font-size:14px}.ai-card[data-font-size=small] .prompt{font-size:13px}.ai-card[data-font-size=small] table,.ai-card[data-font-size=small] pre{font-size:12px}.ai-card[data-font-size=small] h1{font-size:25px}.ai-card[data-font-size=small] h2{font-size:21px}.ai-card[data-font-size=small] h3{font-size:17px}.ai-card[data-font-size=small] h4,.ai-card[data-font-size=small] h5,.ai-card[data-font-size=small] h6{font-size:15px}
-.ai-card[data-font-size=large]{font-size:18px}.ai-card[data-font-size=large] .prompt{font-size:17px}.ai-card[data-font-size=large] table{font-size:16px}.ai-card[data-font-size=large] pre{font-size:15px}.ai-card[data-font-size=large] h1{font-size:31px}.ai-card[data-font-size=large] h2{font-size:26px}.ai-card[data-font-size=large] h3{font-size:22px}.ai-card[data-font-size=large] h4,.ai-card[data-font-size=large] h5,.ai-card[data-font-size=large] h6{font-size:19px}
-.ai-card[data-compact=true]{padding:24px 40px;line-height:1.55}.ai-card[data-compact=true] .card-header{padding-bottom:11px;margin-bottom:14px}.ai-card[data-compact=true] .prompt{padding:10px 16px;margin-bottom:16px}.ai-card[data-compact=true] p{margin:8px 0}.ai-card[data-compact=true] h1,.ai-card[data-compact=true] h2{margin:18px 0 9px}.ai-card[data-compact=true] h3{margin:15px 0 7px}.ai-card[data-compact=true] h4,.ai-card[data-compact=true] h5,.ai-card[data-compact=true] h6{margin:13px 0 6px}.ai-card[data-compact=true] ul,.ai-card[data-compact=true] ol{margin:8px 0}.ai-card[data-compact=true] li{margin:3px 0}.ai-card[data-compact=true] blockquote,.ai-card[data-compact=true] table,.ai-card[data-compact=true] pre,.ai-card[data-compact=true] .diagram{margin:12px 0}.ai-card[data-compact=true] pre{padding:13px 16px}.ai-card[data-compact=true] th,.ai-card[data-compact=true] td{padding:8px 10px}.ai-card[data-compact=true] hr{margin:18px 0}
+.ai-card{padding:24px 40px;line-height:1.55}.ai-card .card-header{padding-bottom:11px;margin-bottom:14px}.ai-card .prompt{padding:10px 16px;margin-bottom:16px}.ai-card p{margin:8px 0}.ai-card h1,.ai-card h2{margin:18px 0 9px}.ai-card h3{margin:15px 0 7px}.ai-card h4,.ai-card h5,.ai-card h6{margin:13px 0 6px}.ai-card ul,.ai-card ol{margin:8px 0}.ai-card li{margin:3px 0}.ai-card blockquote,.ai-card table,.ai-card pre,.ai-card .diagram{margin:12px 0}.ai-card pre{padding:13px 16px}.ai-card th,.ai-card td{padding:8px 10px}.ai-card hr{margin:18px 0}
 
 /* Keep task markers in the list gutter, including wrapped and nested items. */
 .ai-card li[data-checklist-item]{list-style-type:none;position:relative}
 .ai-card svg[data-checklist-box]{position:absolute;left:-1.3em;top:.35em;width:1.1em;height:1.1em;max-width:none;overflow:visible;color:inherit}
+
+/* Structured answer cards: explicit layout independent of host CSS. */
+.ai-card [data-export-component=box],.ai-card [data-export-component=row]{display:flex;flex-direction:column;min-width:0;gap:8px}
+.ai-card [data-export-component=row],.ai-card [data-export-component][data-d-direction=row]{flex-direction:row}
+.ai-card [data-export-component][data-d-align=center]{align-items:center}
+.ai-card [data-export-component][data-d-justify=between]{justify-content:space-between}
+.ai-card [data-export-component][data-d-has-border]{border:1px solid #dedede;border-radius:12px;padding:12px;margin:16px 0}
+.ai-card[data-theme=dark] [data-export-component][data-d-has-border]{border-color:#494949}
+.ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
+.ai-card [data-export-component=caption]{font-size:.85em;line-height:1.5;color:#737373}
+.ai-card [data-export-secondary]{color:#737373}
+.ai-card[data-theme=dark] [data-export-component=caption],.ai-card[data-theme=dark] [data-export-secondary]{color:#aaa}
+.ai-card [data-export-component][data-d-weight=semibold],.ai-card [data-export-component][data-d-default-strong]{font-weight:600}
+.ai-card [data-export-component][data-d-weight=medium]{font-weight:500}
+.ai-card [data-export-component=text][data-d-size=sm]{font-size:.875em}
+.ai-card [data-export-component][data-d-tabular-nums=true]{font-variant-numeric:tabular-nums}
+.ai-card [data-export-component=divider]{margin:4px 0;width:100%;flex:none}
+.ai-card [data-export-shape]{display:block;gap:0;background:#eee;overflow:hidden;flex-shrink:0}
+.ai-card[data-theme=dark] [data-export-shape]{background:#424242}
+.ai-card svg[data-component-checkbox]{position:static;display:block;width:20px;height:20px;max-width:none;flex:none}
+.ai-card img[data-export-component=svg]{margin:0;background:#fff}
+
+.ai-card .export-image-frame{max-width:100%;min-width:0;flex-shrink:1;margin:14px auto}
+.ai-card .export-image-frame>img,.ai-card .export-image-frame>svg{display:block;margin:0}
+.ai-card .diagram .export-image-frame{margin:0 auto}
+
+/* Typography follows the selected body size; diagrams retain their own text. */
+.ai-card[data-font-size]{font-size:var(--body-font-size,16px)}
+.ai-card .prompt{font-size:.9375em}
+.ai-card table{font-size:.875em}.ai-card pre{font-size:.8125em}
+.ai-card h1{font-size:1.75em}.ai-card h2{font-size:1.4375em}.ai-card h3{font-size:1.1875em}
+.ai-card h4,.ai-card h5,.ai-card h6{font-size:1.0625em}
+.ai-card .card-header{flex-wrap:wrap}.ai-card .card-header>span{white-space:normal;min-width:0}
+.ai-card .credit{flex-shrink:1;overflow-wrap:anywhere}
+
+.ai-card svg[data-export-icon]{flex:none;vertical-align:-.125em}
+.ai-card [data-export-icon-row]{display:flex;flex-direction:row;align-items:center;min-width:0}
+.ai-card [data-export-icon-row]>:not([data-export-icon]){min-width:0}
+
+/* Standard retains the former compact layout; spacing does not scale graphics. */
+.ai-card{--spacing-scale:1;--body-line-height:1.55;line-height:var(--body-line-height)}
+.ai-card[data-spacing=small]{--spacing-scale:.75;--body-line-height:1.35}
+.ai-card[data-spacing=large]{--spacing-scale:1.5;--body-line-height:1.8}
+.ai-card p,.ai-card ul,.ai-card ol{margin:calc(8px * var(--spacing-scale)) 0}
+.ai-card li{margin:calc(3px * var(--spacing-scale)) 0}
+.ai-card li>p{margin:calc(4px * var(--spacing-scale)) 0}
+.ai-card h1,.ai-card h2{margin:calc(18px * var(--spacing-scale)) 0 calc(9px * var(--spacing-scale))}
+.ai-card h3{margin:calc(15px * var(--spacing-scale)) 0 calc(7px * var(--spacing-scale))}
+.ai-card h4,.ai-card h5,.ai-card h6{margin:calc(13px * var(--spacing-scale)) 0 calc(6px * var(--spacing-scale))}
+.ai-card blockquote,.ai-card table,.ai-card pre,.ai-card .diagram{margin:calc(12px * var(--spacing-scale)) 0}
+.ai-card pre{line-height:calc(var(--body-line-height) + .2)}
+.ai-card hr{margin:calc(18px * var(--spacing-scale)) 0}
+.ai-card [data-export-component=box],.ai-card [data-export-component=row]{gap:calc(8px * var(--spacing-scale))}
+.ai-card [data-export-component][data-d-has-border]{margin:calc(16px * var(--spacing-scale)) 0}
+.ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
+.ai-card [data-export-component=divider]{margin:calc(4px * var(--spacing-scale)) 0}
+.ai-card [data-export-shape]{gap:0}
+.ai-card .answer-content>:first-child{margin-top:0}
+
+/* Space the visible block's outer wrapper, including wrappers stripped of host CSS. */
+.ai-card [data-export-flow]{margin-block:calc(16px * var(--spacing-scale))!important}
+.ai-card [data-export-flow=heading],.ai-card [data-export-flow=divider]{margin-block:calc(18px * var(--spacing-scale))!important}
+.ai-card .answer-content>[data-export-flow]:first-child{margin-top:0!important}
+.ai-card [data-export-checklist-row]{display:flex;flex-direction:row;align-items:flex-start;gap:calc(8px * var(--spacing-scale));min-width:0}
+.ai-card [data-export-checklist-row]>svg[data-component-checkbox]{width:1.1em;height:1.1em;margin-top:.3em}
+.ai-card [data-export-checklist-row][data-checklist-state=checked]{text-decoration:line-through;color:#737373}
+.ai-card[data-theme=dark] [data-export-checklist-row][data-checklist-state=checked]{color:#aaa}
+
+/* Export current form state as inert, theme-aware controls. */
+.ai-card [data-export-component=form],.ai-card [data-export-component=radio-group]{display:flex;flex-direction:column;gap:calc(12px * var(--spacing-scale));min-width:0}
+.ai-card [data-export-choice-row]{display:flex;align-items:center;gap:8px;min-width:0;text-decoration:none}
+.ai-card [data-export-choice-row]>div:has(>[data-export-form-control=radio]){display:flex;flex:none}
+.ai-card svg[data-export-form-control=radio],.ai-card svg[data-export-form-control=checkbox]{position:static;width:1.15em;height:1.15em;margin:0;flex:none;color:inherit}
+.ai-card [data-export-form-control=input],.ai-card [data-export-form-control=select],.ai-card [data-export-form-control=date],.ai-card [data-export-form-control=textarea]{display:block;min-width:0;width:100%;border:1px solid #d7d7d7;border-radius:20px;padding:10px 14px;white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;color:inherit;line-height:1.5}
+.ai-card [data-export-form-control=textarea]{border-radius:10px;min-height:80px}
+.ai-card [data-export-form-control=select]{position:relative;padding-right:36px}
+.ai-card [data-export-form-control=arrow]{position:absolute;right:14px;top:9px;color:#888}
+.ai-card [data-export-empty]{color:#888!important}
+.ai-card [data-export-form-control=date]{padding-left:40px;position:relative}
+.ai-card [data-export-form-control=date]>svg{position:absolute;left:14px;top:12px;width:1.1em;height:1.1em;margin:0}
+.ai-card [data-export-form-control=slider]{width:100%;min-width:0;padding:8px 10px 0}
+.ai-card [data-export-form-control=slider-track]{position:relative;height:20px;border-radius:999px;background:#eee}
+.ai-card [data-export-form-control=slider-thumb]{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #ddd;box-shadow:0 1px 3px #0002}
+.ai-card [data-export-form-control=slider-ticks]{position:relative;height:26px;margin-top:6px;font-size:.85em}
+.ai-card [data-export-form-control=slider-tick]{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ai-card [data-export-form-control=slider-value]{display:block;text-align:center;font-variant-numeric:tabular-nums}
+.ai-card [data-export-component=badge]{display:inline-flex;align-self:center;flex:none;border-radius:999px;background:#eee;color:#333;font-size:.85em;line-height:1.3;padding:3px 8px}
+.ai-card[data-theme=dark] [data-export-form-control=input],.ai-card[data-theme=dark] [data-export-form-control=select],.ai-card[data-theme=dark] [data-export-form-control=date],.ai-card[data-theme=dark] [data-export-form-control=textarea]{background:#2d2d2d;border-color:#494949}
+.ai-card[data-theme=dark] [data-export-form-control=slider-track],.ai-card[data-theme=dark] [data-export-component=badge]{background:#424242;color:#eee}
+
+.ai-card [data-export-component=row]>:is(h1,h2,h3,h4,h5,h6){margin:0!important}
+
+.ai-card [data-export-component=radio-group]{flex-wrap:nowrap}
+.ai-card [data-export-choice-row]>:not(svg){min-width:0;max-width:100%}

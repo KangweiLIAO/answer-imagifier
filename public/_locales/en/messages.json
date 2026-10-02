@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "Turn ChatGPT answers into clean, shareable images with customizable layouts and high-resolution export."
+    "message": "Turn ChatGPT answers into shareable PNG/JPG images with code, tables, math and diagrams. Images are generated locally."
   },
   "actionTitle": {
     "message": "Answer Imagifier - for ChatGPT · Export image"

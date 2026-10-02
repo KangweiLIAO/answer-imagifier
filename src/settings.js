@@ -1,14 +1,19 @@
-export const DEFAULT_SETTINGS = Object.freeze({ theme: 'light', width: 760, scale: 2, format: 'png', fontSize: 'standard', prompt: false, compact: false });
+import { inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
+export const DEFAULT_SETTINGS = Object.freeze({ theme: 'light', widthMode: 'auto', width: 760, customFontSize: 16, scale: 2, format: 'png', fontSize: 'standard', diagramSize: 'standard', spacing: 'standard', prompt: false, showCredit: true, autoRender: false });
 const allowed = {
-  theme: ['light', 'dark'], width: [600, 760, 960], scale: [1, 2, 3],
-  format: ['png', 'jpg'], fontSize: ['small', 'standard', 'large'],
-  prompt: [false, true], compact: [false, true],
+  theme: ['light', 'dark'], widthMode: ['auto', 'custom'], scale: [1, 2, 3],
+  format: ['png', 'jpg'], fontSize: ['small', 'standard', 'large', 'custom'],
+  diagramSize: ['small', 'standard', 'large'], spacing: ['small', 'standard', 'large'],
+  prompt: [false, true], showCredit: [false, true], autoRender: [false, true],
 };
 const STORAGE_KEY = 'exportSettings';
 let pendingWrite = Promise.resolve();
 export function normalizeSettings(value) {
   return Object.fromEntries(Object.entries(DEFAULT_SETTINGS).map(([key, fallback]) =>
-    [key, allowed[key].includes(value?.[key]) ? value[key] : fallback]));
+    [key, key === 'width' || key === 'customFontSize'
+      ? (inRange(value?.[key], key === 'width' ? WIDTH_LIMITS : FONT_LIMITS) ? value[key] : fallback)
+      : key === 'widthMode' && value?.widthMode === undefined && inRange(value?.width, WIDTH_LIMITS) ? 'custom'
+      : allowed[key].includes(value?.[key]) ? value[key] : fallback]));
 }
 export async function loadSettings() {
   await pendingWrite;

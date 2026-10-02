@@ -1,6 +1,11 @@
 export const PLUGIN_NAME = 'Answer Imagifier - for ChatGPT';
 
 export const messages = {
+  "settingHelp": { "zh": "{setting}说明", "en": "About {setting}" },
+  "widthHelp": { "zh": "控制整张图片的排版宽度。自动适配内容，或自定义 600–1600px。", "en": "Set the whole card width. Fit content automatically or choose 600–1600px." },
+  "qualityHelp": { "zh": "提高像素分辨率，不改变排版；倍数越高，文件越大。", "en": "Increase pixel resolution without changing layout. Higher scales make larger files." },
+  "diagramSizeHelp": { "zh": "调整图表在图片中的大小，保持比例；不影响行内小图标。", "en": "Resize diagrams within the image, keeping their proportions. Inline icons stay unchanged." },
+  "spacingHelp": { "zh": "调整行距和内容块之间的留白，不改变字号。", "en": "Adjust line spacing and gaps between content blocks without changing font size." },
   "exportImage": {
     "zh": "导出长图",
     "en": "Export image"
@@ -26,13 +31,19 @@ export const messages = {
     "en": "Image format"
   },
   "width": {
-    "zh": "图片宽度",
-    "en": "Image width"
+    "zh": "长图宽度",
+    "en": "Card width"
   },
-  "compact": {
-    "zh": "紧凑",
-    "en": "Compact"
-  },
+  "automatic": { "zh": "自动", "en": "Automatic" },
+  "custom": { "zh": "自定义", "en": "Custom" },
+  "customWidth": { "zh": "自定义（px）", "en": "Custom (px)" },
+  "cardWidthPixels": { "zh": "长图宽度（px）", "en": "Card width (px)" },
+  "fontSizePixels": { "zh": "正文字号（px）", "en": "Body font size (px)" },
+  "widthRange": { "zh": "请输入 600–1600 之间的整数。", "en": "Enter a whole number from 600 to 1600." },
+  "fontRange": { "zh": "请输入 12–24 之间的整数。", "en": "Enter a whole number from 12 to 24." },
+  "invalidLayout": { "zh": "请修正宽度或字号后继续。", "en": "Correct the width or font size to continue." },
+  "layoutOverflow": { "zh": "部分内容超出排版宽度，请增加宽度或减小字号。", "en": "Some content exceeds the layout width. Increase the width or reduce the font size." },
+  "narrowLayout": { "zh": "此回答建议使用更宽的排版，请检查图表和表格的可读性。", "en": "A wider layout is recommended. Check that diagrams and tables are readable." },
   "standard": {
     "zh": "标准",
     "en": "Standard"
@@ -45,6 +56,8 @@ export const messages = {
     "zh": "清晰度",
     "en": "Resolution"
   },
+  "diagramSize": { "zh": "图表尺寸", "en": "Diagram size" },
+  "spacing": { "zh": "排版间距", "en": "Layout spacing" },
   "fontSize": {
     "zh": "字体大小",
     "en": "Font size"
@@ -65,13 +78,10 @@ export const messages = {
     "zh": "超清",
     "en": "Ultra"
   },
+  "showExtensionCredit": { "zh": "显示扩展署名", "en": "Show extension credit" },
   "includePrompt": {
     "zh": "包含我的提问",
     "en": "Include my prompt"
-  },
-  "compactLayout": {
-    "zh": "紧凑排版",
-    "en": "Compact layout"
   },
   "fileName": {
     "zh": "图片文件名",
@@ -101,6 +111,12 @@ export const messages = {
     "zh": "复制图片",
     "en": "Copy image"
   },
+  "autoRenderOnEntry": { "zh": "打开时自动渲染", "en": "Auto-render on entry" },
+  "startRender": { "zh": "开始渲染", "en": "Start render" },
+  "notRendered": { "zh": "尚未渲染", "en": "Not rendered" },
+  "readyToRender": { "zh": "调整设置后，点击开始渲染。", "en": "Adjust settings, then click Start render." },
+  "rerender": { "zh": "重新渲染", "en": "Re-render" },
+  "previewOutdated": { "zh": "设置已更改，请重新渲染预览。", "en": "Settings changed. Re-render to update the preview." },
   "retry": {
     "zh": "重试",
     "en": "Retry"

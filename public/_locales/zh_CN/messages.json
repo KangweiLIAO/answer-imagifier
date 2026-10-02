@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "将 ChatGPT 的回答转换为干净、可分享的图像，支持自定义布局和高分辨率导出。"
+    "message": "将 ChatGPT 回答导出为便于分享的 PNG/JPG 长图，保留代码、表格、公式和图表，图片全部在本机生成。"
   },
   "actionTitle": {
     "message": "Answer Imagifier - for ChatGPT · 导出长图"
