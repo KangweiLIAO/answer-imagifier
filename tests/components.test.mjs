@@ -84,3 +84,21 @@ test('checkbox controls in generic rows retain live completion state without li 
   assert.equal(clone.querySelectorAll('[data-export-checklist-row]').length,3);
   assert.equal(clone.querySelectorAll('input,button').length,0);
 });
+
+test('segmented time bar retains accent colors, proportional flex weights and legend widths', async () => {
+  const {source,clone,map} = await sample('segmented-bar');
+  preserveComponents(clone,map, node => ({getPropertyValue: name => {
+    if (name === 'flex-grow') return node.style.flex?.split(' ')[0] || '';
+    if (name === 'flex-shrink') return node.style.flex?.split(' ')[1] || node.style.getPropertyValue(name) || '';
+    if (name === 'flex-basis') return node.style.flex?.split(' ')[2] || '';
+    return node.style.getPropertyValue(name) || '';
+  }}));
+  const track = clone.querySelector('[data-d-has-height][data-d-direction=row]');
+  assert.equal(track.style.height, '14px');
+  assert.deepEqual([...track.children].map(el => el.style.flexGrow), ['5','5','12','18','5']);
+  assert.deepEqual([...track.children].map(el => el.style.backgroundColor),
+    [...source.querySelector('[data-d-has-height][data-d-direction=row]').children].map(el => el.style.backgroundColor));
+  assert.ok([...track.children].every(el => el.style.backgroundColor));
+  assert.equal(clone.querySelector('td').style.width, '8%');
+  assert.equal(clone.querySelectorAll('[data-export-component=table-cell][data-d-align=end]').length, 5);
+});

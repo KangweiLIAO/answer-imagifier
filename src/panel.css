@@ -42,3 +42,6 @@
 .info-button:hover,.info-button:focus-visible{color:#888;border-color:#aaa;background:transparent}
 .setting-tooltip{position:absolute;z-index:5;left:0;top:100%;width:min(240px,100%);padding:10px 12px;margin-top:6px;border-radius:8px;background:#242424;color:#fff;font-size:12px;font-weight:400;line-height:1.5;box-shadow:0 4px 14px #0002;visibility:hidden;opacity:0;pointer-events:none}
 .setting-help:hover .setting-tooltip,.setting-help:focus-within .setting-tooltip{visibility:visible;opacity:1}
+
+.output-width-note{margin:8px 0 0;color:#888;font-size:11px;line-height:1.5}
+.output-width-note:empty{display:none}

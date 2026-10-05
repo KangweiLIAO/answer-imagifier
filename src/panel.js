@@ -7,7 +7,7 @@ import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
 import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
 import { CORNER_RADIUS } from './image-style.js';
 
-export const exportIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h5m-2 4 2 2 3-4"/></svg>';
+export const exportIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
 const downloadIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>';
 function settingHeading(key, id, control) {
   const title = control
@@ -34,7 +34,7 @@ export function openPanel(preselected) {
       <div class="field filename-field"><label for="filename">${t('fileName')}</label><input type="text" id="filename" maxlength="120" autocomplete="off" spellcheck="false"></div>
       <div class="field"><span class="field-label" id="theme-label">${t('imageStyle')}</span><div class="segments" data-option="theme" role="group" aria-labelledby="theme-label"><button data-value="light" aria-pressed="true">${t('light')}</button><button data-value="dark" aria-pressed="false">${t('dark')}</button></div></div>
       <div class="field"><span class="field-label" id="format-label">${t('format')}</span><div class="segments" data-option="format" role="group" aria-labelledby="format-label"><button data-value="png" aria-pressed="true">PNG</button><button data-value="jpg" aria-pressed="false">JPG</button></div></div>
-      <div class="field">${settingHeading('width', 'width-label', 'widthMode')}<select id="widthMode"><option value="auto">${t('automatic')}</option><option value="custom">${t('customWidth')}</option></select><input class="hidden" id="width" type="number" min="600" max="1600" step="1" required aria-label="${t('cardWidthPixels')}" aria-describedby="width-error"><span class="field-error hidden" id="width-error" role="alert">${t('widthRange')}</span><p class="layout-note hidden" role="status"></p></div>
+      <div class="field">${settingHeading('width', 'width-label', 'widthMode')}<select id="widthMode"><option value="auto">${t('automatic')}</option><option value="custom">${t('customWidth')}</option></select><input class="hidden" id="width" type="number" min="600" max="1600" step="1" required aria-label="${t('cardWidthPixels')}" aria-describedby="width-error output-width-note"><span class="field-error hidden" id="width-error" role="alert">${t('widthRange')}</span><p class="output-width-note" id="output-width-note" aria-live="polite"></p><p class="layout-note hidden" role="status"></p></div>
       <div class="field">${settingHeading('quality', 'quality-label', 'scale')}<select id="scale"><option value="1">${t('standard')} · 1×</option><option value="2" selected>${t('high')} · 2×</option><option value="3">${t('ultra')} · 3×</option></select></div>
       <div class="field font-size-field"><span class="field-label" id="font-size-label">${t('fontSize')}</span><div class="segments" data-option="fontSize" role="group" aria-labelledby="font-size-label"><button data-value="small" aria-pressed="false">${t('small')}</button><button data-value="standard" aria-pressed="true">${t('standard')}</button><button data-value="large" aria-pressed="false">${t('large')}</button><button data-value="custom" aria-pressed="false">${t('custom')}</button></div><input class="hidden" id="customFontSize" type="number" min="12" max="24" step="1" required aria-label="${t('fontSizePixels')}" aria-describedby="font-error"><span class="field-error hidden" id="font-error" role="alert">${t('fontRange')}</span></div>
       <div class="field diagram-size-field">${settingHeading('diagramSize', 'diagram-size-label')}<div class="segments" data-option="diagramSize" role="group" aria-labelledby="diagram-size-label"><button data-value="small" aria-pressed="false">${t('small')}</button><button data-value="standard" aria-pressed="true">${t('standard')}</button><button data-value="large" aria-pressed="false">${t('large')}</button></div></div>
@@ -59,6 +59,9 @@ export function openPanel(preselected) {
     $('#customFontSize').classList.toggle('hidden', options.fontSize !== 'custom');
     const widthInvalid = options.widthMode === 'custom' && !inRange(options.width, WIDTH_LIMITS);
     const fontInvalid = options.fontSize === 'custom' && !inRange(options.customFontSize, FONT_LIMITS);
+    $('#output-width-note').textContent = widthInvalid ? '' : options.widthMode === 'custom'
+      ? t('outputWidthEstimate', { width: options.width * options.scale, layout: options.width, scale: `${options.scale}×` })
+      : '';
     $('#width-error').classList.toggle('hidden', !widthInvalid);
     $('#font-error').classList.toggle('hidden', !fontInvalid);
     $('#width').setAttribute('aria-invalid', String(widthInvalid));

@@ -5,7 +5,7 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
   const nodes = [clone, ...clone.querySelectorAll('[data-d-component]')];
   for (const copy of nodes) {
     const type = copy.getAttribute('data-d-component');
-    if (!['box', 'row', 'title', 'text', 'caption', 'divider', 'svg', 'list', 'list-item', 'badge', 'form', 'radio-group', 'radio'].includes(type)) continue;
+    if (!['box', 'row', 'title', 'text', 'caption', 'divider', 'svg', 'list', 'list-item', 'badge', 'form', 'radio-group', 'radio', 'table', 'table-row', 'table-cell'].includes(type)) continue;
     const source = sourceByCopy.get(copy);
     if (!source) continue;
     copy.setAttribute('data-export-component', type);
@@ -14,6 +14,10 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
       hr.setAttribute('data-export-component', 'divider');
       copy.replaceWith(hr);
       continue;
+    }
+    if (type === 'table-cell') {
+      const width = source.style.getPropertyValue('width');
+      if (width && !width.includes('var(')) copy.style.width = width;
     }
     if (type === 'box' || type === 'row' || type === 'form') {
       const style = readStyle(source);
@@ -25,6 +29,9 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
         const value = style.getPropertyValue(property);
         if (value && value !== 'normal' && !value.includes('var(')) copy.style.setProperty(property, property === 'gap' && /^\d+(?:\.\d+)?px$/.test(value) ? `calc(${value} * var(--spacing-scale, 1))` : value);
       }
+      // Empty flex children can be colored segments with no explicit height.
+      const background = source.style.getPropertyValue('background-color');
+      if (background && !background.includes('var(')) copy.style.backgroundColor = background;
       // Fixed-height boxes in these components include empty progress tracks
       // and fills. Preserve dimensions, including a meaningful width of 0%.
       if (source.hasAttribute('data-d-has-height')) {
@@ -37,9 +44,7 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
           const width = source.style.getPropertyValue('width') || style.getPropertyValue('width');
           if (width && !width.includes('var(')) copy.style.width = width;
         }
-        // Theme-dependent surfaces use our palette; literal accent colors survive.
-        const background = source.style.getPropertyValue('background-color');
-        if (background && !background.includes('var(')) copy.style.backgroundColor = background;
+
       }
     }
     if (/var\(--color-text-secondary\)/.test(source.getAttribute('style') || '')) {

@@ -1,5 +1,5 @@
 const NON_CHECKBOX = 'input:not([type=checkbox]):not([type=hidden]),select,textarea,[role=radio],[role=radiogroup],[role=combobox],[role=slider],[role=textbox]';
-const CONTROLS = `${NON_CHECKBOX},input[type=checkbox],[role=checkbox],[data-d-component=select],[data-d-component=date-picker],[data-d-component=slider]`;
+const CONTROLS = `[data-d-component=segmented-control],${NON_CHECKBOX},input[type=checkbox],[role=checkbox],[data-d-component=select],[data-d-component=date-picker],[data-d-component=slider]`;
 
 function formContext(source) {
   const form = source.closest('form,[data-export-form]');
@@ -37,6 +37,18 @@ export function preserveFormControls(clone, sourceByCopy, readStyle = source => 
     if (!clone.contains(copy) || copy.closest('pre,code,svg,[data-math]')) continue;
     const source = sourceByCopy.get(copy);
     if (!source || source.matches('input[type=hidden],input[type=submit],input[type=reset],input[type=button],[role=radiogroup],[aria-hidden="true"]')) continue;
+    if (source.matches('[data-d-component=segmented-control]')) {
+      const group = node(document, 'div', 'segmented');
+      group.setAttribute('data-export-variant', source.querySelector('[data-variant]')?.getAttribute('data-variant') || 'outline');
+      for (const option of source.querySelectorAll('[role=radio]')) {
+        const label = option.textContent.trim() || option.getAttribute('aria-label') || '';
+        const item = node(document, 'span', 'segment', label);
+        item.setAttribute('data-export-selected', String(option.getAttribute('aria-checked') === 'true'));
+        group.append(item);
+      }
+      copy.replaceWith(group);
+      continue;
+    }
     const checkbox = source.matches('input[type=checkbox],[role=checkbox]');
     const radio = source.matches('input[type=radio],[role=radio]');
     if (source.matches('input[type=checkbox],input[type=radio]') && source.parentElement.querySelector('[role=checkbox],[role=radio]')) continue;

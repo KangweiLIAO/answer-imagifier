@@ -2,7 +2,8 @@ export const PLUGIN_NAME = 'Answer Imagifier - for ChatGPT';
 
 export const messages = {
   "settingHelp": { "zh": "{setting}说明", "en": "About {setting}" },
-  "widthHelp": { "zh": "控制整张图片的排版宽度。自动适配内容，或自定义 600–1600px。", "en": "Set the whole card width. Fit content automatically or choose 600–1600px." },
+  "outputWidthEstimate": { "zh": "预计输出宽度：{width}px（{layout}px × {scale}）", "en": "Expected output width: {width}px ({layout}px × {scale})" },
+  "widthHelp": { "zh": "控制内容排版宽度，最终像素宽度 = 排版宽度 × 清晰度倍数。", "en": "Set the layout width. Output pixel width = layout width × resolution scale." },
   "qualityHelp": { "zh": "提高像素分辨率，不改变排版；倍数越高，文件越大。", "en": "Increase pixel resolution without changing layout. Higher scales make larger files." },
   "diagramSizeHelp": { "zh": "调整图表在图片中的大小，保持比例；不影响行内小图标。", "en": "Resize diagrams within the image, keeping their proportions. Inline icons stay unchanged." },
   "spacingHelp": { "zh": "调整行距和内容块之间的留白，不改变字号。", "en": "Adjust line spacing and gaps between content blocks without changing font size." },
@@ -31,13 +32,13 @@ export const messages = {
     "en": "Image format"
   },
   "width": {
-    "zh": "长图宽度",
-    "en": "Card width"
+    "zh": "排版宽度",
+    "en": "Layout width"
   },
   "automatic": { "zh": "自动", "en": "Automatic" },
   "custom": { "zh": "自定义", "en": "Custom" },
   "customWidth": { "zh": "自定义（px）", "en": "Custom (px)" },
-  "cardWidthPixels": { "zh": "长图宽度（px）", "en": "Card width (px)" },
+  "cardWidthPixels": { "zh": "排版宽度（px）", "en": "Layout width (px)" },
   "fontSizePixels": { "zh": "正文字号（px）", "en": "Body font size (px)" },
   "widthRange": { "zh": "请输入 600–1600 之间的整数。", "en": "Enter a whole number from 600 to 1600." },
   "fontRange": { "zh": "请输入 12–24 之间的整数。", "en": "Enter a whole number from 12 to 24." },

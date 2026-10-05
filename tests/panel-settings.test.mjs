@@ -22,7 +22,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   const source = (await readFile('src/panel.js','utf8')).replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
   const context = { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS, document, element, DEFAULT_SETTINGS, loadSettings:()=>new Promise(resolve=>{restore=resolve;}),
     saveSettings:value=>writes.push({...value}), getAnswers:()=>[document.querySelector('#answer')],
-    PLUGIN_NAME:'Test', t:key=>key, locale:'en', panelCSS:'',cardCSS:'', CORNER_RADIUS:12,
+    PLUGIN_NAME:'Test', t:(key,values)=>key === 'outputWidthEstimate' ? `${values.width}px (${values.layout}px × ${values.scale})` : key, locale:'en', panelCSS:'',cardCSS:'', CORNER_RADIUS:12,
     requestAnimationFrame:callback=>queueMicrotask(callback),
     setTimeout:callback=>{render=callback;return 1;},clearTimeout:()=>{},isStreaming:()=>false,
     createCard:async (_,options)=>{snapshot=options;throw Error('Rendering intentionally stubbed');},
@@ -39,6 +39,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(root.querySelector('#showCredit').checked,true);
   assert.equal(root.querySelector('#filename').value,'Current conversation');
   assert.equal(root.querySelector('#autoRender').checked, autoRender);
+  assert.equal(root.querySelector('#output-width-note').textContent, '');
   if (!autoRender) {
     assert.equal(render,undefined);
     assert.equal(root.querySelector('.rerender').textContent,'startRender');
@@ -66,10 +67,15 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   root.querySelector('#width').dispatchEvent(new window.Event('input'));
   assert.equal(writes.length, beforeInvalid);
   assert.equal(root.querySelector('#width').getAttribute('aria-invalid'), 'true');
+  assert.equal(root.querySelector('#output-width-note').textContent, '');
   assert.equal(root.querySelector('.save').disabled, true);
   root.querySelector('#width').value = '1600';
   root.querySelector('#width').dispatchEvent(new window.Event('input'));
   assert.equal(writes.at(-1).width, 1600);
+  assert.equal(root.querySelector('#output-width-note').textContent, '3200px (1600px × 2×)');
+  root.querySelector('#width').value = '1500';
+  root.querySelector('#width').dispatchEvent(new window.Event('input'));
+  assert.equal(root.querySelector('#output-width-note').textContent, '3000px (1500px × 2×)');
   root.querySelector('[data-option="fontSize"] [data-value="custom"]').click();
   root.querySelector('#customFontSize').value = '25';
   root.querySelector('#customFontSize').dispatchEvent(new window.Event('input'));
@@ -79,7 +85,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(writes.at(-1).customFontSize, 24);
   root.querySelector('.rerender').click();
   await render();
-  assert.equal(snapshot.width, 1600);
+  assert.equal(snapshot.width, 1500);
   assert.equal(snapshot.customFontSize, 24);
 
 });

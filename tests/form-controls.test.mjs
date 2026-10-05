@@ -68,3 +68,19 @@ test('vertical form lists never wrap into columns and action-only containers are
   assert.equal(clone.querySelector('#actions'),null);
   assert.equal(clone.querySelectorAll('[data-export-form-control=radio]').length,2);
 });
+
+test('scorecard segmented ratings preserve all labels and the current selection', async () => {
+  const html = await readFile(new URL('./fixtures/scorecard.html', import.meta.url), 'utf8');
+  const {document} = parseHTML(`<main>${html}</main>`);
+  const source = document.querySelector('main');
+  source.querySelectorAll('[role=radio]')[1].setAttribute('aria-checked', 'true');
+  const clone = convert(source);
+  assert.equal(clone.querySelectorAll('[data-export-form-control=segmented]').length, 5);
+  assert.equal(clone.querySelectorAll('[data-export-form-control=segment]').length, 15);
+  assert.equal(clone.querySelector('[data-export-selected=true]').textContent, '1 · Assisted');
+  assert.equal(clone.querySelectorAll('[data-checklist-box]').length, 0);
+  assert.equal(clone.querySelectorAll('button').length, 0);
+  for (const group of clone.querySelectorAll('[data-export-form-control=segmented]')) {
+    assert.deepEqual([...group.children].map(item => item.textContent), ['0 · Missing', '1 · Assisted', '2 · Independent']);
+  }
+});

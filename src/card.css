@@ -115,3 +115,18 @@
 
 .ai-card [data-export-component=radio-group]{flex-wrap:nowrap}
 .ai-card [data-export-choice-row]>:not(svg){min-width:0;max-width:100%}
+
+/* Structured segmented bars stretch their colored flex children to the track. */
+.ai-card [data-export-shape][data-d-direction=row]{display:flex;flex-wrap:nowrap;align-items:stretch}
+.ai-card [data-export-component=table][data-d-column-sizing=auto] table{table-layout:auto}
+.ai-card table[data-d-dividers] :is(th,td){border:0;border-bottom:1px solid #e5e5e5;padding:8px 0}
+.ai-card table[data-d-dividers] tr:last-child :is(th,td){border-bottom:0}
+.ai-card [data-export-component=table-cell][data-d-align=end]{text-align:right}
+.ai-card[data-theme=dark] table[data-d-dividers] :is(th,td){border-bottom-color:#494949}
+.ai-card [data-export-form-control=segmented]{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.ai-card [data-export-form-control=segment]{padding:6px 12px;border:1px solid #ddd;border-radius:999px;color:#737373;line-height:1.4;overflow-wrap:anywhere}
+.ai-card [data-export-variant=ghost]>[data-export-form-control=segment]{border-color:transparent}
+.ai-card [data-export-form-control=segment][data-export-selected=true]{color:#242424;background:#eee;border-color:#ddd;font-weight:500}
+.ai-card[data-theme=dark] [data-export-form-control=segment]{color:#aaa;border-color:#494949}
+.ai-card[data-theme=dark] [data-export-variant=ghost]>[data-export-form-control=segment]{border-color:transparent}
+.ai-card[data-theme=dark] [data-export-form-control=segment][data-export-selected=true]{color:#eee;background:#424242;border-color:#666}
