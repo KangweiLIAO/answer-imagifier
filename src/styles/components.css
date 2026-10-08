@@ -1,0 +1,28 @@
+/* Keep task markers in the list gutter, including wrapped and nested items. */
+.ai-card li[data-checklist-item]{list-style-type:none;position:relative}
+.ai-card svg[data-checklist-box]{position:absolute;left:-1.3em;top:.35em;width:1.1em;height:1.1em;max-width:none;overflow:visible;color:inherit}
+
+/* Structured answer cards: explicit layout independent of host CSS. */
+.ai-card [data-export-component=box],.ai-card [data-export-component=row]{display:flex;flex-direction:column;min-width:0;gap:8px}
+.ai-card [data-export-component=row],.ai-card [data-export-component][data-d-direction=row]{flex-direction:row}
+.ai-card [data-export-component][data-d-align=center]{align-items:center}
+.ai-card [data-export-component][data-d-justify=between]{justify-content:space-between}
+.ai-card [data-export-component][data-d-has-border]{border:1px solid #dedede;border-radius:12px;padding:12px;margin:16px 0}
+.ai-card[data-theme=dark] [data-export-component][data-d-has-border]{border-color:#494949}
+.ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
+.ai-card [data-export-component=caption]{font-size:.85em;line-height:1.5;color:#737373}
+.ai-card [data-export-secondary]{color:#737373}
+.ai-card[data-theme=dark] [data-export-component=caption],.ai-card[data-theme=dark] [data-export-secondary]{color:#aaa}
+.ai-card [data-export-component][data-d-weight=semibold],.ai-card [data-export-component][data-d-default-strong]{font-weight:600}
+.ai-card [data-export-component][data-d-weight=medium]{font-weight:500}
+.ai-card [data-export-component=text][data-d-size=sm]{font-size:.875em}
+.ai-card [data-export-component][data-d-tabular-nums=true]{font-variant-numeric:tabular-nums}
+.ai-card [data-export-component=divider]{margin:4px 0;width:100%;flex:none}
+.ai-card [data-export-shape]{display:block;gap:0;background:#eee;overflow:hidden;flex-shrink:0}
+.ai-card[data-theme=dark] [data-export-shape]{background:#424242}
+.ai-card svg[data-component-checkbox]{position:static;display:block;width:20px;height:20px;max-width:none;flex:none}
+.ai-card img[data-export-component=svg]{margin:0;background:#fff}
+
+.ai-card .export-image-frame{max-width:100%;min-width:0;flex-shrink:1;margin:14px auto}
+.ai-card .export-image-frame>img,.ai-card .export-image-frame>svg{display:block;margin:0}
+.ai-card .diagram .export-image-frame{margin:0 auto}

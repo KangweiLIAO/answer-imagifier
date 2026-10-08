@@ -1,6 +1,8 @@
 import { build } from 'esbuild';
-import { mkdir, copyFile, cp } from 'node:fs/promises';
+import { mkdir, copyFile, cp, rm } from 'node:fs/promises';
 import { htmlToImageCsp } from './html-to-image-csp.mjs';
+// dist is generated; remove stale files before rebuilding the extension.
+await rm('dist', { recursive: true, force: true });
 await mkdir('dist', { recursive: true });
 await build({ entryPoints: ['src/content.js'], outfile: 'dist/content.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, loader: { '.css': 'text', '.svg': 'text', '.png': 'dataurl' }, legalComments: 'eof', plugins: [htmlToImageCsp] });
 await build({ entryPoints: ['src/popup.js'], outfile: 'dist/popup.js', bundle: true, format: 'iife', target: 'chrome120', minify: true });

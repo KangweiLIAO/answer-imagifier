@@ -11,3 +11,7 @@ coverage/
 # Local and OS files
 .DS_Store
 *.log
+
+# Local browser verification artifacts
+.playwright-cli/
+output/playwright/

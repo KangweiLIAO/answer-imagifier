@@ -1,0 +1,41 @@
+/* Typography follows the selected body size; diagrams retain their own text. */
+.ai-card[data-font-size]{font-size:var(--body-font-size,16px)}
+.ai-card .prompt{font-size:.9375em}
+.ai-card table{font-size:.875em}.ai-card pre{font-size:.8125em}
+.ai-card h1{font-size:1.75em}.ai-card h2{font-size:1.4375em}.ai-card h3{font-size:1.1875em}
+.ai-card h4,.ai-card h5,.ai-card h6{font-size:1.0625em}
+.ai-card .card-header{flex-wrap:wrap}.ai-card .card-header>span{white-space:normal;min-width:0}
+.ai-card .credit{flex-shrink:1;overflow-wrap:anywhere}
+
+.ai-card svg[data-export-icon]{flex:none;vertical-align:-.125em}
+.ai-card [data-export-icon-row]{display:flex;flex-direction:row;align-items:center;min-width:0}
+.ai-card [data-export-icon-row]>:not([data-export-icon]){min-width:0}
+
+/* Standard retains the former compact layout; spacing does not scale graphics. */
+.ai-card{--spacing-scale:1;--body-line-height:1.55;line-height:var(--body-line-height)}
+.ai-card[data-spacing=small]{--spacing-scale:.75;--body-line-height:1.35}
+.ai-card[data-spacing=large]{--spacing-scale:1.5;--body-line-height:1.8}
+.ai-card p,.ai-card ul,.ai-card ol{margin:calc(8px * var(--spacing-scale)) 0}
+.ai-card li{margin:calc(3px * var(--spacing-scale)) 0}
+.ai-card li>p{margin:calc(4px * var(--spacing-scale)) 0}
+.ai-card h1,.ai-card h2{margin:calc(18px * var(--spacing-scale)) 0 calc(9px * var(--spacing-scale))}
+.ai-card h3{margin:calc(15px * var(--spacing-scale)) 0 calc(7px * var(--spacing-scale))}
+.ai-card h4,.ai-card h5,.ai-card h6{margin:calc(13px * var(--spacing-scale)) 0 calc(6px * var(--spacing-scale))}
+.ai-card blockquote,.ai-card table,.ai-card pre,.ai-card .diagram{margin:calc(12px * var(--spacing-scale)) 0}
+.ai-card pre{line-height:calc(var(--body-line-height) + .2)}
+.ai-card hr{margin:calc(18px * var(--spacing-scale)) 0}
+.ai-card [data-export-component=box],.ai-card [data-export-component=row]{gap:calc(8px * var(--spacing-scale))}
+.ai-card [data-export-component][data-d-has-border]{margin:calc(16px * var(--spacing-scale)) 0}
+.ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
+.ai-card [data-export-component=divider]{margin:calc(4px * var(--spacing-scale)) 0}
+.ai-card [data-export-shape]{gap:0}
+.ai-card .answer-content>:first-child{margin-top:0}
+
+/* Space the visible block's outer wrapper, including wrappers stripped of host CSS. */
+.ai-card [data-export-flow]{margin-block:calc(16px * var(--spacing-scale))!important}
+.ai-card [data-export-flow=heading],.ai-card [data-export-flow=divider]{margin-block:calc(18px * var(--spacing-scale))!important}
+.ai-card .answer-content>[data-export-flow]:first-child{margin-top:0!important}
+.ai-card [data-export-checklist-row]{display:flex;flex-direction:row;align-items:flex-start;gap:calc(8px * var(--spacing-scale));min-width:0}
+.ai-card [data-export-checklist-row]>svg[data-component-checkbox]{width:1.1em;height:1.1em;margin-top:.3em}
+.ai-card [data-export-checklist-row][data-checklist-state=checked]{text-decoration:line-through;color:#737373}
+.ai-card[data-theme=dark] [data-export-checklist-row][data-checklist-state=checked]{color:#aaa}

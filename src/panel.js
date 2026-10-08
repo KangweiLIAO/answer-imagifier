@@ -1,7 +1,7 @@
 import { PLUGIN_NAME, t, locale } from './i18n.js';
 import panelCSS from './panel.css';
 import infoIcon from './assets/info.svg';
-import cardCSS from './card.css';
+import cardCSS from './styles/card.js';
 import { element, getAnswers, fileName, isStreaming } from './dom.js';
 import { createCard, rasterize } from './render.js';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';

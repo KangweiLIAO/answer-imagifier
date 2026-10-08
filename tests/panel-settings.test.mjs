@@ -1,35 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { runInNewContext } from 'node:vm';
-import { parseHTML } from 'linkedom';
-import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from '../src/layout.js';
 import { DEFAULT_SETTINGS } from '../src/settings.js';
-const infoIcon = await readFile('src/assets/info.svg', 'utf8');
+import { createBrowser } from './helpers/browser.mjs';
+import { loadModule } from './helpers/module.mjs';
 
-for (const autoRender of [false, true]) test(`panel restores controls before its first preview (auto entry: ${autoRender}) and saves changes without exporting`, async () => {
-  const {document,window} = parseHTML('<html><body><div id="answer">Answer</div></body></html>');
+for (const autoRender of [false, true]) test(`panel restores controls before its first preview (auto entry: ${autoRender}) and saves changes without exporting`, async t => {
+  const {document,window,globals} = createBrowser(t, '<div id="answer" data-message-author-role="assistant">Answer</div>');
   document.title = 'Current conversation';
   const saved = {...DEFAULT_SETTINGS,theme:'dark',format:'jpg',width:960,prompt:true,fontSize:'large',autoRender};
   let restore, render, snapshot;
   const writes = [];
-  const element = (tag, className, text) => {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text) node.textContent = text;
-    if (tag === 'dialog') { node.showModal = () => {}; node.close = () => {}; }
-    return node;
-  };
-  const source = (await readFile('src/panel.js','utf8')).replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
-  const context = { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS, document, element, DEFAULT_SETTINGS, loadSettings:()=>new Promise(resolve=>{restore=resolve;}),
-    saveSettings:value=>writes.push({...value}), getAnswers:()=>[document.querySelector('#answer')],
-    PLUGIN_NAME:'Test', t:(key,values)=>key === 'outputWidthEstimate' ? `${values.width}px (${values.layout}px × ${values.scale})` : key, locale:'en', infoIcon,panelCSS:'',cardCSS:'', CORNER_RADIUS:12,
-    requestAnimationFrame:callback=>queueMicrotask(callback),
-    setTimeout:callback=>{render=callback;return 1;},clearTimeout:()=>{},isStreaming:()=>false,
-    createCard:async (_,options)=>{snapshot=options;throw Error('Rendering intentionally stubbed');},
-  };
-  runInNewContext(source,context);
-  context.openPanel(document.querySelector('#answer'));
+  const panel = await loadModule('src/panel.js', {
+    globals: { ...globals, setTimeout: callback => { render = callback; return 1; }, clearTimeout: () => {} },
+    mocks: {
+      'src/settings.js': { DEFAULT_SETTINGS, loadSettings: () => new Promise(resolve => { restore = resolve; }), saveSettings: value => writes.push({ ...value }) },
+      'src/render.js': { createCard: async (_, options) => { snapshot = options; throw Error('Rendering intentionally stubbed'); }, rasterize: async () => {} },
+      'src/i18n.js': { PLUGIN_NAME: 'Test', locale: 'en', t: (key, values) => key === 'outputWidthEstimate' ? `${values.width}px (${values.layout}px × ${values.scale})` : key },
+    },
+  });
+  panel.openPanel(document.querySelector('#answer'));
   const root = document.querySelector('#answer-imagifier-root').shadowRoot;
   assert.equal(render,undefined);
   assert.equal(root.querySelector('#prompt').disabled,true);
@@ -95,30 +84,29 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
 
 });
 
-test('completed previews require manual re-render and stale in-flight results never enable export', async () => {
-  const {document,window} = parseHTML('<html><body><div id="answer">Answer</div></body></html>');
+test('completed previews require manual re-render and stale in-flight results never enable export', async t => {
+  const {document,window,globals} = createBrowser(t, '<div id="answer" data-message-author-role="assistant">Answer</div>');
   document.title = 'Conversation';
-  window.HTMLImageElement.prototype.decode = async () => {};
   let render, timers = 0, renders = 0, finish;
-  const element = (tag,className,text) => {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text) node.textContent = text;
-    if (tag === 'dialog') { node.showModal = () => {}; node.close = () => {}; }
-    return node;
-  };
-  const source = (await readFile('src/panel.js','utf8')).replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
-  const context = {document,element,DEFAULT_SETTINGS,validLayout,inRange,WIDTH_LIMITS,FONT_LIMITS,
-    loadSettings:async()=>({...DEFAULT_SETTINGS}),saveSettings:()=>{},getAnswers:()=>[document.querySelector('#answer')],
-    PLUGIN_NAME:'Test',t:key=>key,locale:'en',infoIcon,panelCSS:'',cardCSS:'',CORNER_RADIUS:12,
-    requestAnimationFrame:callback=>queueMicrotask(callback),
-    setTimeout:callback=>{render=callback;timers++;return timers;},clearTimeout:()=>{},isStreaming:()=>false,
-    navigator:{clipboard:{write:async()=>{}}},ClipboardItem:class {},URL:{createObjectURL:()=>`blob:${renders}`,revokeObjectURL:()=>{}},
-    createCard:async()=>{renders++;return {card:{},warnings:[]};},
-    rasterize:async()=>{if(finish) await new Promise(resolve=>{finish=resolve;});return {blob:{size:100},width:760,height:1000,layoutWidth:760};},
-  };
-  runInNewContext(source,context);
-  context.openPanel(document.querySelector('#answer'));
+  const panel = await loadModule('src/panel.js', {
+    globals: {
+      ...globals, setTimeout: callback => { render = callback; timers++; return timers; }, clearTimeout: () => {},
+      navigator: { clipboard: { write: async () => {} } }, ClipboardItem: class {},
+      URL: { createObjectURL: () => `blob:${renders}`, revokeObjectURL: () => {} },
+    },
+    mocks: {
+      'src/settings.js': { DEFAULT_SETTINGS, loadSettings: async () => ({ ...DEFAULT_SETTINGS }), saveSettings: () => {} },
+      'src/render.js': {
+        createCard: async () => { renders++; return { card: {}, warnings: [] }; },
+        rasterize: async () => {
+          if (finish) await new Promise(resolve => { finish = resolve; });
+          return { blob: { size: 100 }, width: 760, height: 1000, layoutWidth: 760 };
+        },
+      },
+      'src/i18n.js': { PLUGIN_NAME: 'Test', locale: 'en', t: key => key },
+    },
+  });
+  panel.openPanel(document.querySelector('#answer'));
   await Promise.resolve();
   const root = document.querySelector('#answer-imagifier-root').shadowRoot;
   assert.equal(renders,0);

@@ -1,26 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { parseHTML } from 'linkedom';
+import { createDOM, cloneForAdapter, readFixture } from './helpers/dom.mjs';
 import { excludedContent } from '../src/content-filter.js';
-import { preserveChecklist } from '../src/checklist.js';
-import { preserveComponents } from '../src/components.js';
+import { preserveChecklist } from '../src/export/adapters/checklist.js';
+import { preserveComponents } from '../src/export/adapters/components.js';
 
 async function sample(name) {
-  const html = await readFile(new URL(`./fixtures/structured-${name}.html`, import.meta.url), 'utf8');
-  const { document } = parseHTML(`<html><body><main>${html}</main></body></html>`);
+  const { document } = createDOM(`<main>${await readFixture(`structured-${name}`)}</main>`);
   const source = document.querySelector('main');
-  const clone = source.cloneNode(true);
-  const originals = [source, ...source.querySelectorAll('*')];
-  const copies = [clone, ...clone.querySelectorAll('*')];
-  const map = new Map(copies.map((copy, index) => [copy, originals[index]]));
-  const omitted = excludedContent(source);
-  for (const copy of copies) {
-    if (omitted.has(map.get(copy))) copy.remove();
-    copy.removeAttribute('class');
-    copy.removeAttribute('style');
-  }
-  return { source, clone, map };
+  return { source, ...cloneForAdapter(source, { omitted: excludedContent(source), stripStyles: true, stripClasses: true }) };
 }
 const readStyle = source => ({ getPropertyValue: name => {
   const value = source.style.getPropertyValue(name) || '';
@@ -46,7 +34,6 @@ test('component rows preserve checkbox states, zero progress and dividers', asyn
   controls[2].setAttribute('aria-checked', 'mixed');
   preserveChecklist(clone, map);
   preserveComponents(clone, map, readStyle);
-  clone.querySelectorAll('button,input').forEach(el => el.remove());
   assert.deepEqual([...clone.querySelectorAll('[data-component-checkbox]')].map(el => el.getAttribute('data-checklist-box')), ['unchecked', 'checked', 'mixed', 'unchecked', 'unchecked']);
   assert.equal(clone.querySelectorAll('[data-checklist-item]').length, 0);
   assert.equal(clone.querySelectorAll('hr[data-export-component="divider"]').length, 4);
@@ -65,7 +52,7 @@ test('progress fill preserves partial and full widths', async () => {
 });
 
 test('chart accessibility data and hover overlays are excluded while visible lists remain', () => {
-  const {document} = parseHTML('<main><div data-d-component="chart"><svg/><ul class="sr-only"><li>Jan: 1200</li></ul><div class="recharts-tooltip-wrapper">Hover</div><div role="tooltip">Hover</div></div><ul id="visible"><li>Ordinary answer list</li></ul></main>');
+  const {document} = createDOM('<main><div data-d-component="chart"><svg/><ul class="sr-only"><li>Jan: 1200</li></ul><div class="recharts-tooltip-wrapper">Hover</div><div role="tooltip">Hover</div></div><ul id="visible"><li>Ordinary answer list</li></ul></main>');
   const omitted = excludedContent(document.querySelector('main'));
   assert.ok(omitted.has(document.querySelector('.sr-only')));
   assert.ok(omitted.has(document.querySelector('[role=tooltip]')));
@@ -74,12 +61,11 @@ test('chart accessibility data and hover overlays are excluded while visible lis
 });
 
 test('checkbox controls in generic rows retain live completion state without li or component metadata', () => {
-  const {document} = parseHTML('<main><div><button role="checkbox" aria-checked="true"></button><span>Done task</span></div><label><input type="checkbox"><span>Remaining task</span></label><div><button role="checkbox" aria-checked="mixed"></button><span>Partial</span></div></main>');
-  const source = document.querySelector('main'), clone = source.cloneNode(true);
-  const originals = [source,...source.querySelectorAll('*')], copies = [clone,...clone.querySelectorAll('*')];
-  originals[1].querySelector('button').setAttribute('aria-checked','true');
+  const {document} = createDOM('<main><div><button role="checkbox" aria-checked="true"></button><span>Done task</span></div><label><input type="checkbox"><span>Remaining task</span></label><div><button role="checkbox" aria-checked="mixed"></button><span>Partial</span></div></main>');
+  const source = document.querySelector('main');
+  const { clone, map } = cloneForAdapter(source);
   source.querySelector('input').checked = true; // property can differ from the attribute
-  preserveChecklist(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])));
+  preserveChecklist(clone, map);
   assert.deepEqual([...clone.querySelectorAll('[data-checklist-box]')].map(el=>el.getAttribute('data-checklist-box')), ['checked','checked','mixed']);
   assert.equal(clone.querySelectorAll('[data-export-checklist-row]').length,3);
   assert.equal(clone.querySelectorAll('input,button').length,0);
@@ -103,26 +89,23 @@ test('segmented time bar retains accent colors, proportional flex weights and le
   assert.equal(clone.querySelectorAll('[data-export-component=table-cell][data-d-align=end]').length, 5);
 });
 
-test('inline entity names survive button cleanup while actions remain removable', () => {
-  const {document}=parseHTML('<main><p><span data-d-component="pressable" data-d-inline role="button" tabindex="0"><span>拉鲁拉丝</span></span> → 沙奈朵</p><table><tr><td><span data-d-component="pressable" data-d-inline role="button">宝贝龙</span></td></tr></table><button data-d-component="pressable">Reset</button><div role="button" data-d-component="popover-trigger">Citation</div></main>');
-  const source=document.querySelector('main'),clone=source.cloneNode(true);
-  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
-  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),readStyle);
-  clone.querySelectorAll('button,[role=button]').forEach(node=>node.remove());
+test('inline entity names become inert while actions remain owned by cleanup', () => {
+  const {document}=createDOM('<main><p><span data-d-component="pressable" data-d-inline role="button" tabindex="0"><span>拉鲁拉丝</span></span> → 沙奈朵</p><table><tr><td><span data-d-component="pressable" data-d-inline role="button">宝贝龙</span></td></tr></table><button data-d-component="pressable">Reset</button><div role="button" data-d-component="popover-trigger">Citation</div></main>');
+  const source = document.querySelector('main');
+  const { clone, map } = cloneForAdapter(source, { stripStyles: true });
+  preserveComponents(clone,map,readStyle);
   assert.equal(clone.querySelector('p').textContent,'拉鲁拉丝 → 沙奈朵');
   assert.equal(clone.querySelector('td').textContent,'宝贝龙');
   assert.equal(clone.querySelectorAll('[data-export-entity]').length,2);
-  assert.equal(clone.querySelectorAll('[tabindex],button,[role=button]').length,0);
-  assert.ok(!clone.textContent.includes('Reset'));
-  assert.ok(!clone.textContent.includes('Citation'));
+  assert.equal(clone.querySelectorAll('[data-export-entity][tabindex],[data-export-entity][role=button]').length, 0);
+  assert.equal(clone.querySelector('button').textContent, 'Reset');
 });
 
 test('structured grid retains fluid columns, item placement and spacing', () => {
-  const {document}=parseHTML('<main><div data-d-component="grid" style="grid-template-columns:repeat(3, minmax(0px, 1fr));gap:8px"><div data-d-component="grid-item" style="--grid-item-column:span 2;--grid-item-row:auto"><p>巨沼怪</p></div><div data-d-component="grid-item"><p>沙奈朵</p></div></div></main>');
-  const source=document.querySelector('main'),clone=source.cloneNode(true);
-  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
-  copies.forEach(node=>node.removeAttribute('style'));
-  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),readStyle);
+  const {document}=createDOM('<main><div data-d-component="grid" style="grid-template-columns:repeat(3, minmax(0px, 1fr));gap:8px"><div data-d-component="grid-item" style="--grid-item-column:span 2;--grid-item-row:auto"><p>巨沼怪</p></div><div data-d-component="grid-item"><p>沙奈朵</p></div></div></main>');
+  const source = document.querySelector('main');
+  const { clone, map } = cloneForAdapter(source, { stripStyles: true });
+  preserveComponents(clone,map,readStyle);
   const grid=clone.querySelector('[data-export-component=grid]');
   assert.equal(grid.style.gridTemplateColumns,'repeat(3, minmax(0px, 1fr))');
   assert.equal(grid.style.gap,'calc(8px * var(--spacing-scale, 1))');
@@ -131,11 +114,10 @@ test('structured grid retains fluid columns, item placement and spacing', () => 
 });
 
 test('grid rows recompute for export instead of copying measured host heights', () => {
-  const {document}=parseHTML('<main><div data-d-component="grid" style="grid-template-columns:repeat(3,minmax(0px,1fr))"><div data-d-component="grid-item"><p>Caption</p></div></div></main>');
-  const source=document.querySelector('main'),clone=source.cloneNode(true);
-  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
-  copies.forEach(node=>node.removeAttribute('style'));
-  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),node=>({getPropertyValue:name=>name==='grid-template-rows'?'326px 326px':readStyle(node).getPropertyValue(name)}));
+  const {document}=createDOM('<main><div data-d-component="grid" style="grid-template-columns:repeat(3,minmax(0px,1fr))"><div data-d-component="grid-item"><p>Caption</p></div></div></main>');
+  const source = document.querySelector('main');
+  const { clone, map } = cloneForAdapter(source, { stripStyles: true });
+  preserveComponents(clone,map,node=>({getPropertyValue:name=>name==='grid-template-rows'?'326px 326px':readStyle(node).getPropertyValue(name)}));
   assert.ok(!clone.querySelector('[data-export-component=grid]').style.gridTemplateRows);
   assert.equal(clone.querySelector('[data-export-component=grid]').style.gridTemplateColumns,'repeat(3,minmax(0px,1fr))');
 });

@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { stubProperties } from './helpers/dom.mjs';
 import { DEFAULT_SETTINGS, normalizeSettings, loadSettings, saveSettings } from '../src/settings.js';
 
 test('missing and invalid settings fall back per field and exclude content', () => {
@@ -7,14 +8,12 @@ test('missing and invalid settings fall back per field and exclude content', () 
   assert.deepEqual(normalizeSettings({theme:'dark',width:599,scale:'3',prompt:'false',filename:'private',answer:'private',compact:false}), {...DEFAULT_SETTINGS,theme:'dark'});
 });
 test('settings persist across reads and rapid writes finish in order', async t => {
-  const previous = globalThis.chrome;
-  t.after(() => { globalThis.chrome = previous; });
   let data = {};
   const order = [];
-  globalThis.chrome = {storage:{local:{
+  stubProperties(t, globalThis, { chrome: {storage:{local:{
     get: async () => data,
     set: async value => { await new Promise(resolve => setTimeout(resolve, 5)); order.push(value.exportSettings.width); data = value; },
-  }}};
+  }}} });
   assert.deepEqual(await loadSettings(), DEFAULT_SETTINGS);
   const first = saveSettings({...DEFAULT_SETTINGS,width:600});
   const last = saveSettings({...DEFAULT_SETTINGS,width:960,theme:'dark',format:'jpg',prompt:true,fontSize:'large',scale:3});
@@ -25,11 +24,9 @@ test('settings persist across reads and rapid writes finish in order', async t =
   assert.deepEqual(restored,{...DEFAULT_SETTINGS,width:960,theme:'dark',format:'jpg',prompt:true,fontSize:'large',scale:3});
 });
 test('storage failures report their reason and do not poison later writes', async t => {
-  const previous = globalThis.chrome, previousWarn = console.warn;
   const warnings = [];
-  console.warn = (...args) => warnings.push(args);
-  t.after(() => { globalThis.chrome = previous; console.warn = previousWarn; });
-  globalThis.chrome = {storage:{local:{get:async()=>{throw Error('read');},set:async()=>{throw Error('write');}}}};
+  stubProperties(t, console, { warn: (...args) => warnings.push(args) });
+  stubProperties(t, globalThis, { chrome: {storage:{local:{get:async()=>{throw Error('read');},set:async()=>{throw Error('write');}}}} });
   assert.deepEqual(await loadSettings(),DEFAULT_SETTINGS);
   assert.equal(await saveSettings(DEFAULT_SETTINGS),false);
   assert.deepEqual(warnings, [['Answer Imagifier: could not save export settings.', 'write']]);
@@ -37,9 +34,7 @@ test('storage failures report their reason and do not poison later writes', asyn
   assert.equal(await saveSettings(DEFAULT_SETTINGS),true);
 });
 test('unavailable extension storage keeps defaults and does not throw', async t => {
-  const previous = globalThis.chrome;
-  t.after(() => { globalThis.chrome = previous; });
-  globalThis.chrome = undefined;
+  stubProperties(t, globalThis, { chrome: undefined });
   assert.deepEqual(await loadSettings(),DEFAULT_SETTINGS);
   assert.equal(await saveSettings(DEFAULT_SETTINGS),false);
 });

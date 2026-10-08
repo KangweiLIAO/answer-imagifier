@@ -1,18 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseHTML } from 'linkedom';
-import { preserveChecklist } from '../src/checklist.js';
+import { createDOM, cloneForAdapter } from './helpers/dom.mjs';
+import { preserveChecklist } from '../src/export/adapters/checklist.js';
 
 function convert(html, change = () => {}) {
-  const { document } = parseHTML(`<html><body><div>${html}</div></body></html>`);
+  const { document } = createDOM(`<div>${html}</div>`);
   const source = document.querySelector('body > div');
   change(source);
-  const clone = source.cloneNode(true);
-  const originals = [source, ...source.querySelectorAll('*')];
-  const copies = [clone, ...clone.querySelectorAll('*')];
-  preserveChecklist(clone, new Map(copies.map((copy, i) => [copy, originals[i]])));
-  // Same control cleanup as the export renderer; static SVGs must survive it.
-  clone.querySelectorAll('button,input,textarea,select,[role="button"],[hidden],[aria-hidden="true"]').forEach(e => e.remove());
+  const { clone, map } = cloneForAdapter(source);
+  preserveChecklist(clone, map);
   return clone;
 }
 test('checklists preserve live checked state rather than stale attributes', () => {
@@ -33,7 +29,8 @@ test('nested tasks and ARIA checkboxes keep states without changing ordinary lis
   assert.match(clone.textContent, /Long taskNested task/);
   assert.doesNotMatch(clone.textContent, /Old icon/);
 });
-test('non-list form controls are still removed', () => {
+test('unowned root controls are left for the cleanup stage', () => {
   const clone = convert('<input type="checkbox" checked><ul><li>Normal bullet</li></ul>');
-  assert.equal(clone.querySelectorAll('svg,[data-checklist-item],input').length, 0);
+  assert.equal(clone.querySelectorAll('svg,[data-checklist-item]').length, 0);
+  assert.equal(clone.querySelectorAll('input').length, 1);
 });

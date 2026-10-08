@@ -1,19 +1,15 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {parseHTML} from 'linkedom';
+import { createDOM, cloneForAdapter } from './helpers/dom.mjs';
 import {excludedContent} from '../src/content-filter.js';
-import {preserveComponents} from '../src/components.js';
-import {preserveImagePlaceholders} from '../src/image-placeholder.js';
+import {preserveComponents} from '../src/export/adapters/components.js';
+import {preserveImagePlaceholders} from '../src/export/adapters/image-placeholder.js';
 
 function convert(html, enabled = true) {
-  const {document}=parseHTML(`<main>${html}</main>`);
-  const source=document.querySelector('main'),clone=source.cloneNode(true);
-  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
-  const map=new Map(copies.map((copy,i)=>[copy,originals[i]])),omitted=excludedContent(source);
-  for (const copy of copies) {
-    if(omitted.has(map.get(copy)))copy.remove();
-    copy.removeAttribute('style');
-  }
+  const {document}=createDOM(`<main>${html}</main>`);
+  const source = document.querySelector('main');
+  const omitted = excludedContent(source);
+  const { clone, map } = cloneForAdapter(source, { omitted, stripStyles: true });
   preserveComponents(clone,map,()=>({getPropertyValue:name=>name==='height'?'900px':''}));
   preserveImagePlaceholders(clone,map,omitted,'Image',enabled);
   return clone;

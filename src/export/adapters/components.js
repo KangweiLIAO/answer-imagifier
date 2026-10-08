@@ -1,4 +1,4 @@
-import { isChromaticColor } from './visual-assets.js';
+import { isChromaticColor } from '../../shared/color.js';
 // Normalize structured answer components before empty-wrapper cleanup. Keep only
 // layout values needed by the export; host classes and theme variables stay out.
 export function preserveComponents(clone, sourceByCopy, readStyle = source => getComputedStyle(source)) {

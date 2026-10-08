@@ -1,4 +1,4 @@
-import { choiceMarker } from './form-controls.js';
+import { choiceMarker } from '../../shared/choice-marker.js';
 
 // Replace interactive list checkboxes after style cleanup, before controls are
 // removed. Read live properties from the source; checked attributes can be stale.

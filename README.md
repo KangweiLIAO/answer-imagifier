@@ -2,7 +2,7 @@
 
 把 **ChatGPT 单独一条回答** 渲染成一张完整的 PNG / JPG 长图。
 
-当前版本：**1.2.2**。更新内容见 [更新日志](changelog.md)。
+当前版本：**1.3.0**。更新内容见 [更新日志](changelog.md)。
 
 ## 安装
 
@@ -14,7 +14,7 @@
 4. 刷新 ChatGPT 对话页面。
 5. 等回答完成并出现原生操作栏后，点击该回答下方的「Export image / 导出长图」。插件不在 ChatGPT 原生分享弹窗中添加按钮。
 
-升级到 1.2.2 后，重新加载扩展并刷新已打开的 ChatGPT 页面。本次未新增权限，仍只使用 `storage` 保存本机导出偏好；旧版宽度设置会保留，旧 Compact layout 设置将忽略。
+升级到 1.3.0 后，重新加载扩展并刷新已打开的 ChatGPT 页面。本次未新增权限，仍只使用 `storage` 保存本机导出偏好；旧版宽度设置会保留，旧 Compact layout 设置将忽略。
 
 ## 功能
 
@@ -25,6 +25,8 @@
 - 可选择包含提问、显示图片占位或隐藏扩展署名；实体名称与网格布局保留。
 - 先调整设置再生成预览，也可开启进入时自动渲染；修改设置后手动重新生成。
 - 图片在本机生成，导出偏好仅保存在本机。
+
+Automatic 会结合字号、表格列数和每列文字宽度选择排版宽度，优先保留短列的可读宽度，长说明正常换行；达到 1600px 上限后仍允许换行。含合并单元格或明确指定列宽的表格保留原布局。
 
 自定义的排版宽度不是最终像素宽度：输出像素宽度 = 排版宽度 × 清晰度倍数。例如 1500px 配合 2× 清晰度，输出为 3000px；自定义模式下会显示预计值，并提醒自定义宽度可能导致排版异常。
 
@@ -38,6 +40,8 @@ npm test
 
 `npm run build` 将全部运行时依赖打包到扩展里，不从 CDN 加载脚本。构建后在扩展管理页点击刷新，并刷新 ChatGPT 页面。
 
+测试分层、公共工具和替代依赖边界见 [测试维护说明](tests/README.md)。
+
 ## 隐私与边界
 
 - 仅保存导出偏好，不保存对话、图片或自定义文件名；详情见 [隐私政策](PRIVACY_POLICY.md)。
@@ -50,24 +54,27 @@ npm test
 
 ## 结构
 
-- `src/content.js`：每条回答的导出入口、生成状态检测和按钮挂载。
-- `src/panel.js`：单条回答的预览、设置、复制与保存。
-- `src/settings.js`：导出偏好的校验、本机存储与恢复。
-- `src/code-block.js` / `src/code-language.js`：代码块提取、语言识别与高亮。
-- `src/form-controls.js`：表单实时状态快照、静态控件、Radio／Checkbox 去重及刻度布局。
-- `src/checklist.js`：勾选状态到静态 SVG 的转换。
-- `src/components.js`：结构化回答组件的布局、文字层级和进度条保留。
-- `src/block-spacing.js`：块内容外层间距归一化，保留行内公式布局。
-- `src/image-placeholder.js`：结构化图片占位及显示开关，保留原始比例与缩略图宽度。
-- `src/image-width.js`：内部图表的容器自适应与三级尺寸限制。
-- `src/layout.js`：宽度／字号范围、自动长图宽度建议及溢出检测。
-- `src/render.js`：内容快照、代码高亮、图表预渲染和图片生成。
-- `src/card.css` / `src/panel.css`：长图与面板样式。
-- `public/manifest.json`：Chrome Manifest V3 配置，仅匹配 ChatGPT 域名，仅申请 storage 权限以保存导出偏好。
+- `src/content.js` / `src/dom.js`：回答识别、生成状态及导出入口；宿主回答选择器集中在 `src/chatgpt/selectors.js`。
+- `src/panel.js` / `src/settings.js`：预览面板、导出操作及本机偏好。
+- `src/render.js`：导出流程协调，保留 `createCard()` / `rasterize()` 接口。
+- `src/export/`：快照、适配器顺序、清理、长图组装、资源加载、布局及图片输出。
+- `src/export/adapters/`：结构化布局、表单、清单、图标、图片占位和代码块的静态转换。
+- `src/shared/`：适配器共用的勾选标记、颜色判断及异步超时。
+- `src/code-block.js` / `src/code-language.js` / `src/math-style.js`：代码与数学内容处理。
+- `src/layout.js` / `src/table-layout.js` / `src/image-width.js` / `src/block-spacing.js`：排版策略与测量。
+- `src/styles/`：长图基础、组件、字号／间距和控件样式；按固定顺序合并到 Shadow DOM。
+- `src/panel.css`：面板样式。
+- `samples/intelligent-ui/`：真实回答样本的采集模板、参考截图与导出对照。
+- `tests/fixtures/`：自动化测试使用的精简 HTML。
+- `public/manifest.json`：Chrome Manifest V3 配置，仅匹配 ChatGPT 域名，仅申请 storage 权限。
+
+处理阶段、节点归属与新增组件步骤见 [架构说明](ARCHITECTURE.md)。
 
 实现参考：[Chrome 内容脚本文档](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)、[html-to-image 项目文档](https://github.com/bubkoo/html-to-image)。
 
 ## 后续事项
+
+- Intelligent UI 兼容性样本的采集模板和操作说明见 [样本库](samples/intelligent-ui/README.md)。
 
 - 部分混合内容的本地深色 PNG 样本中，内嵌 SVG 架构图出现空白；单独图表样本导出正常，原因尚未定位，需进一步验证。小图标与提示卡片修复已单独验证。
 

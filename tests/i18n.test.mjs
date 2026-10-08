@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { stubProperties } from './helpers/dom.mjs';
 import { messages, resolveLanguage, translate } from '../src/i18n.js';
 
 test('Chinese locales select Chinese and all other locales fall back to English', () => {
@@ -14,11 +15,8 @@ test('every interface message has both translations and placeholders interpolate
   assert.equal(translate('save', 'zh-CN', { format: 'PNG' }), '保存 PNG');
   assert.equal(translate('save', 'fr-FR', { format: 'JPG' }), 'Save JPG');
 });
-test('Chrome UI language takes precedence over navigator language', async () => {
-  const original = globalThis.chrome;
-  try {
-    globalThis.chrome = { i18n: { getUILanguage: () => 'zh-TW' } };
-    const module = await import('../src/i18n.js?chrome-language-test');
-    assert.equal(module.locale, 'zh');
-  } finally { if (original === undefined) delete globalThis.chrome; else globalThis.chrome = original; }
+test('Chrome UI language takes precedence over navigator language', async t => {
+  stubProperties(t, globalThis, { chrome: { i18n: { getUILanguage: () => 'zh-TW' } } });
+  const module = await import('../src/i18n.js?chrome-language-test');
+  assert.equal(module.locale, 'zh');
 });
