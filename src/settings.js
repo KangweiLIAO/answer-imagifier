@@ -1,10 +1,10 @@
 import { inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
-export const DEFAULT_SETTINGS = Object.freeze({ theme: 'light', widthMode: 'auto', width: 760, customFontSize: 16, scale: 2, format: 'png', fontSize: 'standard', diagramSize: 'standard', spacing: 'standard', prompt: false, showCredit: true, autoRender: false });
+export const DEFAULT_SETTINGS = Object.freeze({ theme: 'light', widthMode: 'auto', width: 760, customFontSize: 16, scale: 2, format: 'png', fontSize: 'standard', diagramSize: 'standard', spacing: 'standard', prompt: false, showCredit: true, showImagePlaceholders: true, autoRender: false });
 const allowed = {
   theme: ['light', 'dark'], widthMode: ['auto', 'custom'], scale: [1, 2, 3],
   format: ['png', 'jpg'], fontSize: ['small', 'standard', 'large', 'custom'],
   diagramSize: ['small', 'standard', 'large'], spacing: ['small', 'standard', 'large'],
-  prompt: [false, true], showCredit: [false, true], autoRender: [false, true],
+  prompt: [false, true], showCredit: [false, true], showImagePlaceholders: [false, true], autoRender: [false, true],
 };
 const STORAGE_KEY = 'exportSettings';
 let pendingWrite = Promise.resolve();
@@ -33,8 +33,8 @@ export function saveSettings(value) {
       if (!storage) return false;
       await storage.set({ [STORAGE_KEY]: snapshot });
       return true;
-    } catch {
-      console.warn('Answer Imagifier: could not save export settings.');
+    } catch (error) {
+      console.warn('Answer Imagifier: could not save export settings.', error?.message || 'Unknown storage error');
       return false;
     }
   });

@@ -10,6 +10,7 @@ import { preserveVisualAssets } from './visual-assets.js';
 import { applyImageWidths } from './image-width.js';
 import { preserveBlockSpacing } from './block-spacing.js';
 import { excludedContent } from './content-filter.js';
+import { preserveImagePlaceholders } from './image-placeholder.js';
 import { roundExport } from './image-style.js';
 import { inheritMathForeground } from './math-style.js';
 import { getCodeBlocks, createCodeBlock } from './code-block.js';
@@ -27,7 +28,7 @@ function copyStyles(source, target) {
   for (const key of style) target.style.setProperty(key, style.getPropertyValue(key));
 }
 
-function cloneContent(source, warnings) {
+function cloneContent(source, warnings, options) {
   const clone = source.cloneNode(true);
   const originals = [source, ...source.querySelectorAll('*')];
   const copies = [clone, ...clone.querySelectorAll('*')];
@@ -71,6 +72,7 @@ function cloneContent(source, warnings) {
   preserveFormControls(clone, sourceByCopy);
   preserveChecklist(clone, sourceByCopy);
   preserveComponents(clone, sourceByCopy);
+  preserveImagePlaceholders(clone, sourceByCopy, omitted, t('imagePlaceholder'), options.showImagePlaceholders !== false);
   clone.querySelectorAll('script,style,link,meta').forEach(el => el.remove());
   clone.querySelectorAll('button,input,textarea,select,[role="button"],[hidden],[aria-hidden="true"]:not(.katex-html)').forEach(el => {
     // KaTeX's visual HTML is aria-hidden because its MathML is the accessible equivalent.
@@ -161,7 +163,7 @@ export async function createCard(answer, options, mount) {
     const section = element('section', 'answer');
     const prompt = getPrompt(answer);
     if (options.prompt && prompt) section.append(element('div', 'prompt', prompt));
-    const content = cloneContent(getAnswerRoot(answer), warnings);
+    const content = cloneContent(getAnswerRoot(answer), warnings, options);
     content.classList.add('answer-content');
     section.append(content); card.append(section);
   }

@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import { parseHTML } from 'linkedom';
 import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from '../src/layout.js';
 import { DEFAULT_SETTINGS } from '../src/settings.js';
+const infoIcon = await readFile('src/assets/info.svg', 'utf8');
 
 for (const autoRender of [false, true]) test(`panel restores controls before its first preview (auto entry: ${autoRender}) and saves changes without exporting`, async () => {
   const {document,window} = parseHTML('<html><body><div id="answer">Answer</div></body></html>');
@@ -22,7 +23,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   const source = (await readFile('src/panel.js','utf8')).replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
   const context = { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS, document, element, DEFAULT_SETTINGS, loadSettings:()=>new Promise(resolve=>{restore=resolve;}),
     saveSettings:value=>writes.push({...value}), getAnswers:()=>[document.querySelector('#answer')],
-    PLUGIN_NAME:'Test', t:(key,values)=>key === 'outputWidthEstimate' ? `${values.width}px (${values.layout}px × ${values.scale})` : key, locale:'en', panelCSS:'',cardCSS:'', CORNER_RADIUS:12,
+    PLUGIN_NAME:'Test', t:(key,values)=>key === 'outputWidthEstimate' ? `${values.width}px (${values.layout}px × ${values.scale})` : key, locale:'en', infoIcon,panelCSS:'',cardCSS:'', CORNER_RADIUS:12,
     requestAnimationFrame:callback=>queueMicrotask(callback),
     setTimeout:callback=>{render=callback;return 1;},clearTimeout:()=>{},isStreaming:()=>false,
     createCard:async (_,options)=>{snapshot=options;throw Error('Rendering intentionally stubbed');},
@@ -37,6 +38,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(root.querySelector('[data-value="dark"]').getAttribute('aria-pressed'),'true');
   assert.equal(root.querySelector('#prompt').checked,true);
   assert.equal(root.querySelector('#showCredit').checked,true);
+  assert.equal(root.querySelector('#showImagePlaceholders').checked,true);
   assert.equal(root.querySelector('#filename').value,'Current conversation');
   assert.equal(root.querySelector('#autoRender').checked, autoRender);
   assert.equal(root.querySelector('#output-width-note').textContent, '');
@@ -56,6 +58,9 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(writes.at(-1).format,'jpg');
   assert.equal(root.querySelector('#compact'), null);
   assert.equal('compact' in writes.at(-1), false);
+  root.querySelector('#showImagePlaceholders').checked = false;
+  root.querySelector('#showImagePlaceholders').dispatchEvent(new window.Event('change'));
+  assert.equal(writes.at(-1).showImagePlaceholders,false);
   root.querySelector('#showCredit').checked = false;
   root.querySelector('#showCredit').dispatchEvent(new window.Event('change'));
   assert.equal(writes.at(-1).showCredit, false);
@@ -105,7 +110,7 @@ test('completed previews require manual re-render and stale in-flight results ne
   const source = (await readFile('src/panel.js','utf8')).replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
   const context = {document,element,DEFAULT_SETTINGS,validLayout,inRange,WIDTH_LIMITS,FONT_LIMITS,
     loadSettings:async()=>({...DEFAULT_SETTINGS}),saveSettings:()=>{},getAnswers:()=>[document.querySelector('#answer')],
-    PLUGIN_NAME:'Test',t:key=>key,locale:'en',panelCSS:'',cardCSS:'',CORNER_RADIUS:12,
+    PLUGIN_NAME:'Test',t:key=>key,locale:'en',infoIcon,panelCSS:'',cardCSS:'',CORNER_RADIUS:12,
     requestAnimationFrame:callback=>queueMicrotask(callback),
     setTimeout:callback=>{render=callback;timers++;return timers;},clearTimeout:()=>{},isStreaming:()=>false,
     navigator:{clipboard:{write:async()=>{}}},ClipboardItem:class {},URL:{createObjectURL:()=>`blob:${renders}`,revokeObjectURL:()=>{}},

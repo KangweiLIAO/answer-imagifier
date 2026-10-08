@@ -102,3 +102,40 @@ test('segmented time bar retains accent colors, proportional flex weights and le
   assert.equal(clone.querySelector('td').style.width, '8%');
   assert.equal(clone.querySelectorAll('[data-export-component=table-cell][data-d-align=end]').length, 5);
 });
+
+test('inline entity names survive button cleanup while actions remain removable', () => {
+  const {document}=parseHTML('<main><p><span data-d-component="pressable" data-d-inline role="button" tabindex="0"><span>拉鲁拉丝</span></span> → 沙奈朵</p><table><tr><td><span data-d-component="pressable" data-d-inline role="button">宝贝龙</span></td></tr></table><button data-d-component="pressable">Reset</button><div role="button" data-d-component="popover-trigger">Citation</div></main>');
+  const source=document.querySelector('main'),clone=source.cloneNode(true);
+  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
+  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),readStyle);
+  clone.querySelectorAll('button,[role=button]').forEach(node=>node.remove());
+  assert.equal(clone.querySelector('p').textContent,'拉鲁拉丝 → 沙奈朵');
+  assert.equal(clone.querySelector('td').textContent,'宝贝龙');
+  assert.equal(clone.querySelectorAll('[data-export-entity]').length,2);
+  assert.equal(clone.querySelectorAll('[tabindex],button,[role=button]').length,0);
+  assert.ok(!clone.textContent.includes('Reset'));
+  assert.ok(!clone.textContent.includes('Citation'));
+});
+
+test('structured grid retains fluid columns, item placement and spacing', () => {
+  const {document}=parseHTML('<main><div data-d-component="grid" style="grid-template-columns:repeat(3, minmax(0px, 1fr));gap:8px"><div data-d-component="grid-item" style="--grid-item-column:span 2;--grid-item-row:auto"><p>巨沼怪</p></div><div data-d-component="grid-item"><p>沙奈朵</p></div></div></main>');
+  const source=document.querySelector('main'),clone=source.cloneNode(true);
+  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
+  copies.forEach(node=>node.removeAttribute('style'));
+  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),readStyle);
+  const grid=clone.querySelector('[data-export-component=grid]');
+  assert.equal(grid.style.gridTemplateColumns,'repeat(3, minmax(0px, 1fr))');
+  assert.equal(grid.style.gap,'calc(8px * var(--spacing-scale, 1))');
+  assert.equal(grid.querySelector('[data-export-component=grid-item]').style.gridColumn,'span 2');
+  assert.equal(grid.querySelectorAll('[data-export-component=grid-item]').length,2);
+});
+
+test('grid rows recompute for export instead of copying measured host heights', () => {
+  const {document}=parseHTML('<main><div data-d-component="grid" style="grid-template-columns:repeat(3,minmax(0px,1fr))"><div data-d-component="grid-item"><p>Caption</p></div></div></main>');
+  const source=document.querySelector('main'),clone=source.cloneNode(true);
+  const originals=[source,...source.querySelectorAll('*')],copies=[clone,...clone.querySelectorAll('*')];
+  copies.forEach(node=>node.removeAttribute('style'));
+  preserveComponents(clone,new Map(copies.map((copy,i)=>[copy,originals[i]])),node=>({getPropertyValue:name=>name==='grid-template-rows'?'326px 326px':readStyle(node).getPropertyValue(name)}));
+  assert.ok(!clone.querySelector('[data-export-component=grid]').style.gridTemplateRows);
+  assert.equal(clone.querySelector('[data-export-component=grid]').style.gridTemplateColumns,'repeat(3,minmax(0px,1fr))');
+});

@@ -1,8 +1,10 @@
 export const PLUGIN_NAME = 'Answer Imagifier - for ChatGPT';
 
 export const messages = {
+  "showImagePlaceholders": { "zh": "显示图片占位", "en": "Show image placeholders" },
+  "imagePlaceholder": { "zh": "Image", "en": "Image" },
   "settingHelp": { "zh": "{setting}说明", "en": "About {setting}" },
-  "outputWidthEstimate": { "zh": "预计输出宽度：{width}px（{layout}px × {scale}）", "en": "Expected output width: {width}px ({layout}px × {scale})" },
+  "outputWidthEstimate": { "zh": "预计输出宽度：{width}px（{layout}px × {scale}）。自定义宽度可能导致排版异常。", "en": "Expected output width: {width}px ({layout}px × {scale}). Custom widths may cause layout issues." },
   "widthHelp": { "zh": "控制内容排版宽度，最终像素宽度 = 排版宽度 × 清晰度倍数。", "en": "Set the layout width. Output pixel width = layout width × resolution scale." },
   "qualityHelp": { "zh": "提高像素分辨率，不改变排版；倍数越高，文件越大。", "en": "Increase pixel resolution without changing layout. Higher scales make larger files." },
   "diagramSizeHelp": { "zh": "调整图表在图片中的大小，保持比例；不影响行内小图标。", "en": "Resize diagrams within the image, keeping their proportions. Inline icons stay unchanged." },

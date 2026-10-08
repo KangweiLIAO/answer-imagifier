@@ -24,12 +24,15 @@ test('settings persist across reads and rapid writes finish in order', async t =
   assert.deepEqual(order,[600,960]);
   assert.deepEqual(restored,{...DEFAULT_SETTINGS,width:960,theme:'dark',format:'jpg',prompt:true,fontSize:'large',scale:3});
 });
-test('storage failures fall back and do not poison later writes', async t => {
-  const previous = globalThis.chrome;
-  t.after(() => { globalThis.chrome = previous; });
+test('storage failures report their reason and do not poison later writes', async t => {
+  const previous = globalThis.chrome, previousWarn = console.warn;
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args);
+  t.after(() => { globalThis.chrome = previous; console.warn = previousWarn; });
   globalThis.chrome = {storage:{local:{get:async()=>{throw Error('read');},set:async()=>{throw Error('write');}}}};
   assert.deepEqual(await loadSettings(),DEFAULT_SETTINGS);
   assert.equal(await saveSettings(DEFAULT_SETTINGS),false);
+  assert.deepEqual(warnings, [['Answer Imagifier: could not save export settings.', 'write']]);
   globalThis.chrome.storage.local.set = async () => {};
   assert.equal(await saveSettings(DEFAULT_SETTINGS),true);
 });
@@ -65,4 +68,11 @@ test('auto-render on entry defaults off and accepts only boolean preferences', (
   assert.equal(normalizeSettings({}).autoRender, false);
   assert.equal(normalizeSettings({autoRender:true}).autoRender, true);
   assert.equal(normalizeSettings({autoRender:'true'}).autoRender, false);
+});
+
+
+test('image placeholders default on and retain an explicit opt-out',()=>{
+  assert.equal(normalizeSettings({}).showImagePlaceholders,true);
+  assert.equal(normalizeSettings({showImagePlaceholders:false}).showImagePlaceholders,false);
+  assert.equal(normalizeSettings({showImagePlaceholders:'false'}).showImagePlaceholders,true);
 });
