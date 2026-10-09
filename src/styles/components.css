@@ -20,6 +20,10 @@
 .ai-card [data-export-component=divider]{margin:4px 0;width:100%;flex:none}
 .ai-card [data-export-shape]{display:block;gap:0;background:#eee;overflow:hidden;flex-shrink:0}
 .ai-card[data-theme=dark] [data-export-shape]{background:#424242}
+.ai-card [data-export-progress-fill],.ai-card[data-theme=dark] [data-export-progress-fill]{background:currentColor}
+.ai-card [data-export-component=row][data-export-answer-option][data-d-has-border]{margin:0;border-radius:12px;gap:12px}
+.ai-card [data-export-answer-option]>[data-export-component=text]{flex:1;min-width:0}
+.ai-card [data-export-answer-option][data-export-selected=true]{outline:2px solid currentColor;outline-offset:-2px}
 .ai-card svg[data-component-checkbox]{position:static;display:block;width:20px;height:20px;max-width:none;flex:none}
 .ai-card img[data-export-component=svg]{margin:0;background:#fff}
 

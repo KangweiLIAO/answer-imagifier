@@ -5,11 +5,12 @@
 .ai-card svg[data-export-form-control=radio],.ai-card svg[data-export-form-control=checkbox]{position:static;width:1.15em;height:1.15em;margin:0;flex:none;color:inherit}
 .ai-card [data-export-form-control=input],.ai-card [data-export-form-control=select],.ai-card [data-export-form-control=date],.ai-card [data-export-form-control=textarea]{display:block;min-width:0;width:100%;border:1px solid #d7d7d7;border-radius:20px;padding:10px 14px;white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;color:inherit;line-height:1.5}
 .ai-card [data-export-form-control=textarea]{border-radius:10px;min-height:80px}
-.ai-card [data-export-form-control=select]{position:relative;padding-right:36px}
-.ai-card [data-export-form-control=arrow]{position:absolute;right:14px;top:9px;color:#888}
+.ai-card [data-export-form-control=select],.ai-card [data-export-form-control=date]{position:relative;padding-right:36px;border-radius:9999px}
+.ai-card svg[data-export-form-control=arrow]{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:.7857em;height:.4286em;max-width:none;display:block;margin:0;flex:none;color:#5d5d5d}
+.ai-card[data-theme=dark] svg[data-export-form-control=arrow]{color:#aaa}
 .ai-card [data-export-empty]{color:#888!important}
-.ai-card [data-export-form-control=date]{padding-left:40px;position:relative}
-.ai-card [data-export-form-control=date]>svg{position:absolute;left:14px;top:12px;width:1.1em;height:1.1em;margin:0}
+.ai-card [data-export-form-control=date]{padding-left:40px}
+.ai-card [data-export-form-control=date]>svg[data-export-form-control=calendar]{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;margin:0}
 .ai-card [data-export-form-control=slider]{width:100%;min-width:0;padding:8px 10px 0}
 .ai-card [data-export-form-control=slider-track]{position:relative;height:20px;border-radius:999px;background:#eee}
 .ai-card [data-export-form-control=slider-thumb]{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #ddd;box-shadow:0 1px 3px #0002}

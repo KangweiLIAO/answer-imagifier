@@ -43,12 +43,22 @@ test('component rows preserve checkbox states, zero progress and dividers', asyn
 });
 
 test('progress fill preserves partial and full widths', async () => {
-  for (const width of ['40%', '100%']) {
+  for (const width of ['0%', '33.3333%', '100%']) {
     const { source, clone, map } = await sample('progress');
     source.querySelector('[data-d-has-width]').style.width = width;
     preserveComponents(clone, map, readStyle);
     assert.equal(clone.querySelector('[data-d-has-width]').style.width, width);
+    assert.equal(clone.querySelector('[data-d-has-width]').style.backgroundColor, 'rgb(57, 132, 94)');
   }
+});
+
+test('colored progress variables resolve to accent paint without changing proportional width', () => {
+  const { document } = createDOM('<main><div data-d-component="box" data-d-has-height style="height:4px;background-color:var(--track)"><div data-d-component="box" data-d-has-height data-d-has-width style="height:4px;width:50%;background-color:var(--accent)"></div></div></main>');
+  const { clone, map } = cloneForAdapter(document.querySelector('main'), { stripStyles: true });
+  preserveComponents(clone, map, source => ({ getPropertyValue: name => name === 'background-color' ? (source.hasAttribute('data-d-has-width') ? 'rgb(20, 100, 220)' : 'rgb(240, 240, 240)') : source.style.getPropertyValue(name) || '' }));
+  const fill = clone.querySelector('[data-d-has-width]');
+  assert.equal(fill.style.backgroundColor, 'rgb(20, 100, 220)');
+  assert.equal(fill.style.width, '50%');
 });
 
 test('chart accessibility data and hover overlays are excluded while visible lists remain', () => {

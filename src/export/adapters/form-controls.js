@@ -17,6 +17,15 @@ function node(document, tag, kind, text) {
   if (text !== undefined) result.textContent = text;
   return result;
 }
+function dropdownArrow(document) {
+  const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  arrow.setAttribute('data-export-form-control', 'arrow');
+  arrow.setAttribute('data-export-icon', '');
+  arrow.setAttribute('viewBox', '0 0 16 9');
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.innerHTML = '<path d="M1 1 8 8 15 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  return arrow;
+}
 export function preserveFormControls(clone, sourceByCopy, readStyle = source => getComputedStyle(source)) {
   const document = clone.ownerDocument;
   for (const copy of [...clone.querySelectorAll(CONTROLS)]) {
@@ -96,14 +105,14 @@ export function preserveFormControls(clone, sourceByCopy, readStyle = source => 
     const placeholder = source.getAttribute('placeholder') || source.getAttribute('data-placeholder') || '';
     const box = node(document, multiline ? 'div' : 'span', select ? 'select' : date ? 'date' : multiline ? 'textarea' : 'input', value || placeholder || '—');
     if (!value || source.querySelector('[data-selected="false"]')) box.setAttribute('data-export-empty','');
-    if (select) { const arrow = node(document,'span','arrow','⌄'); box.append(arrow); }
+    if (select || date) box.append(dropdownArrow(document));
     if (date) {
       box.setAttribute('data-export-date','');
       const icon = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      icon.setAttribute('data-export-form-control', 'calendar');
       icon.setAttribute('viewBox','0 0 24 24'); icon.setAttribute('data-export-icon','');
       icon.innerHTML = '<path d="M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm-2 5h18M8 3v4m8-4v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>';
       box.prepend(icon);
-      box.append(node(document,'span','arrow','⌄'));
     }
     copy.replaceWith(box);
   }

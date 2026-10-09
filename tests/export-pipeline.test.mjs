@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_SETTINGS } from '../src/settings.js';
 import { createBrowser } from './helpers/browser.mjs';
 import { loadModule } from './helpers/module.mjs';
+import { readFixture } from './helpers/dom.mjs';
 
 async function setup(t, markup) {
   const { document, globals } = createBrowser(t, `<main data-message-author-role="assistant">${markup}</main><div id="mount"></div>`);
@@ -85,4 +86,44 @@ test('card assembly preserves prompt, theme and optional credit through the publ
   assert.equal(card.querySelector('.wordmark').textContent.trim(), 'ChatGPT');
   const withoutCredit = await render();
   assert.equal(withoutCredit.card.querySelector('.credit,.prompt'), null);
+});
+
+test('assessment exports all disabled answers, wrong-answer icon and partial progress before button cleanup', async t => {
+  const { source, render } = await setup(t, await readFixture('assessment'));
+  const before = source.outerHTML;
+  const { output } = await render();
+  const choices = [...output.querySelectorAll('[data-export-answer-option]')];
+  assert.deepEqual(choices.map(choice => choice.textContent), [
+    'A. A larger relational database', 'B. A message queue', 'C. Client-side caching only',
+  ]);
+  assert.equal(choices[0].querySelectorAll('svg[data-export-icon] path').length, 2);
+  assert.equal(choices[1].querySelector('svg'), null);
+  assert.match(output.textContent, /Review this concept/);
+  assert.doesNotMatch(output.textContent, /Next question/);
+  assert.equal(output.querySelector('[data-export-progress-fill]').style.width, '33.3333%');
+  assert.equal(output.querySelector('button,[role=button],[disabled],[tabindex]'), null);
+  assert.equal(source.outerHTML, before);
+});
+
+test('answer choices preserve live selection and remain content inside a form while ordinary actions are removed', async t => {
+  const { source, render } = await setup(t, '<form><input value="current"><div data-d-component="box" data-d-direction="col"><button data-d-component="pressable" data-d-has-border data-d-direction="row" aria-pressed="false"><p data-d-component="text">First choice</p></button><button data-d-component="pressable" data-d-has-border data-d-direction="row" aria-pressed="false"><p data-d-component="text">Second choice</p></button></div><button data-d-component="pressable" data-d-has-border data-d-direction="row"><p data-d-component="text">Submit</p></button><div data-d-component="row"><button>Reset</button><button>Copy</button></div></form>');
+  source.querySelectorAll('[aria-pressed]')[1].setAttribute('aria-pressed', 'true');
+  const { output } = await render();
+  assert.deepEqual([...output.querySelectorAll('[data-export-answer-option]')].map(choice => choice.getAttribute('data-export-selected')), ['false', 'true']);
+  assert.match(output.textContent, /First choiceSecond choice/);
+  assert.doesNotMatch(output.textContent, /Submit|Reset|Copy/);
+  assert.equal(output.querySelector('[aria-pressed],button'), null);
+});
+
+test('select and date exports share the SVG chevron while retaining a separate calendar icon', async t => {
+  const { render } = await setup(t, '<form><span data-d-component="select"><span role="button">Production</span></span><span data-d-component="date-picker"><span role="button">Choose a date</span></span></form>');
+  const { output } = await render();
+  const select = output.querySelector('[data-export-form-control=select]');
+  const date = output.querySelector('[data-export-form-control=date]');
+  assert.equal(select.textContent, 'Production');
+  assert.equal(date.textContent, 'Choose a date');
+  assert.equal(select.querySelector('svg[data-export-form-control=arrow]').outerHTML, date.querySelector('svg[data-export-form-control=arrow]').outerHTML);
+  assert.equal(date.querySelectorAll('svg').length, 2);
+  assert.ok(date.querySelector('svg[data-export-form-control=calendar]'));
+  assert.equal(output.querySelector('span[data-export-form-control=arrow],button,[role=button]'), null);
 });

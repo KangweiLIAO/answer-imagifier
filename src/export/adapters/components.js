@@ -53,6 +53,10 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
       // Empty flex children can be colored segments with no explicit height.
       const background = source.style.getPropertyValue('background-color');
       if (background && !background.includes('var(')) copy.style.backgroundColor = background;
+      else if (background) {
+        const resolved = style.getPropertyValue('background-color');
+        if (isChromaticColor(resolved)) copy.style.backgroundColor = resolved;
+      }
       // Fixed-height boxes in these components include empty progress tracks
       // and fills. Preserve dimensions, including a meaningful width of 0%.
       if (source.hasAttribute('data-d-has-height')) {
@@ -64,6 +68,10 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
         if (source.hasAttribute('data-d-has-width')) {
           const width = source.style.getPropertyValue('width') || style.getPropertyValue('width');
           if (width && !width.includes('var(')) copy.style.width = width;
+          // Neutral progress fills must contrast with their track in either
+          // export theme; host foreground variables cannot survive cloning.
+          if (source.parentElement?.hasAttribute('data-d-has-height') &&
+              background && !copy.style.backgroundColor) copy.setAttribute('data-export-progress-fill', '');
         }
 
       }
