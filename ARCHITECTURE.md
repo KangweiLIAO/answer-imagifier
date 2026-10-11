@@ -9,7 +9,8 @@ flowchart TD
     A[content.js：发现回答并挂载入口] --> B[panel.js：恢复设置、请求预览]
     B --> C[render.js：协调导出]
     C --> D[export/snapshot.js：克隆、原节点映射、必要样式和 Canvas]
-    D --> E[export/adapters.js：按显式顺序转换内容]
+    D --> DS[export/iframe-snapshots.js：请求 sandbox 内截图]
+    DS --> E[export/adapters.js：按显式顺序转换内容]
     E --> F[export/cleanup.js：清理交互元素和不支持的嵌入]
     F --> G[adapters/code.js：从原节点恢复代码及原生 Mermaid]
     G --> H[export/cleanup.js：移除空容器]
@@ -28,6 +29,7 @@ flowchart TD
 | `chatgpt/selectors.js`、`dom.js` | 回答、提问、生成状态及操作栏识别 | 宿主回答选择器集中维护；组件内部选择器归相应适配器 |
 | `render.js` | 编排导出阶段 | 不添加组件选择器或具体控件转换逻辑 |
 | `export/snapshot.js` | 建立 DOM 副本及来源映射；捕获可读取的 Canvas 和数学／SVG 样式 | 不修改原回答；过滤判断基于原 DOM |
+| `export/iframe-snapshots.js`、`frame-capture.js` | 在 sandbox 内栅格化当前可视化，再替换副本中的 iframe | 域名、消息来源和请求 ID 校验；不修改原页面；失败沿用嵌入提示 |
 | `export/adapters.js` | 固定适配顺序 | 适配器在清理按钮前读取原节点的实时属性 |
 | `export/adapters/` | 把内容转换为静态 DOM | 不操作面板、不保存设置、不下载资源 |
 | `export/cleanup.js` | 移除不应导出的节点、替换嵌入及清理空容器 | 必须保留适配器产生的静态内容 |
@@ -99,7 +101,23 @@ rasterize(card, options)          // Promise<{ blob, layoutWidth, width, height,
 
 测试维护约定见 [tests/README.md](tests/README.md)。导出集成测试调用真实 `createCard()`，避免在测试内维护另一套阶段顺序。
 
-仅采集样本不会自动接入测试。未知组件当前沿用既有通用清理行为；本次重构没有增加标签页、地图、iframe 截图或新的交互组件支持。
+仅采集样本不会自动接入测试。未知组件当前沿用既有通用清理行为。
+
+## iframe 静态截图
+
+`frame.js` 仅注入 `https://*.web-sandbox.oaiusercontent.com/*`，并在子 frame 中监听来自 ChatGPT 直接父窗口的请求。父端同时校验 iframe 窗口、精确 origin、协议及随机请求 ID；只接受有尺寸上限的 PNG data URL。图片留在单次导出的内存里，不写入 storage 或上传服务器。
+
+快照之后、普通适配和清理之前，`preserveIframeSnapshots()` 将成功捕获的 iframe 副本换成 `img[data-export-iframe-snapshot]`。失败或 25 秒无回应则保留 iframe，让原清理阶段产生提示。源 iframe 不被替换、滚动或重载。
+
+Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五层），避免只截到 sandbox 外壳；其他嵌套 iframe 无法捕获时明确失败。内部文档通过 html-to-image 生成 PNG，字体和原生图片等待就绪，像素总量上限 1600 万、数据长度上限 3200 万字符。该方案是 DOM 栅格化，受字体、资源访问和 Canvas/WebGL 可读取性限制，不保证任意网页的屏幕像素一致。
+
+截图保持当前页面主题和排版，宽度随长图内容等比缩放。`applyImageWidths()` 跳过此标记，避免普通图表大小设置缩小整个页面。导出主题、字号不会改写截图内的内容。
+
+### 原生地图的支持边界
+
+`map-route-gym-eligibility` 和 `ottawa-walking-tour-map` 样本中的地图是主页面上的 `canvas.mapboxgl-canvas`，均没有 iframe，因此不会进入此截图流程。现有 Canvas 捕获仍由 `snapshot.js` 调用 `toDataURL()`；该调用未抛错也不代表捕获到了地图像素。
+
+两个样本的实际导出均缺失地图，状态继续为 fail。WebGL 绘制缓冲、捕获时机及原 DOM 清理的影响需要在真实地图页面分别排查，不能凭保存的 HTML 确认根因。后续地图适配需同时保留画布、编号标记和标签，并在无法捕获时显示明确说明；本次 iframe 改动不包含地图修复，也未引入浏览器屏幕截图权限。
 
 ## 构建与清理
 

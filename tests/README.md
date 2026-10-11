@@ -56,6 +56,9 @@ LinkeDOM 没有真实布局引擎；测试里的 Canvas 文字测量及内联样
 
 ## 共享控件与状态回归
 
+- `iframe-snapshots.test.mjs` 覆盖域名及 PNG 限制、消息窗口／origin／请求 ID 校验、超时监听清理、Skybridge 内层文档、失败提示及图片不受图表大小影响。`export-pipeline.test.mjs` 验证 iframe 捕获在普通清理前执行、源 iframe 保持不变。
+- iframe 截图还需浏览器 PNG 验证；本地回放只验证传输和栅格化，不能替代扩展在 ChatGPT sandbox 中的实际注入、CSP 与资源访问验收。
+
 - `export-pipeline.test.mjs` 使用 `fixtures/assessment.html` 检查真实测验选项经过完整清理后仍保留答案、错误图标与部分进度；同时检查实时选择、纯操作按钮移除及源 DOM 不被修改。
 - select 和日期选择器的共享箭头用完整导出流程验证：SVG 相同、无旧文字箭头、日期仍有独立日历图标。新增下拉类控件时，将其加入同一组检查。
 - `components.test.mjs` 覆盖 0%、33.3333%、100% 宽度和变量引用的彩色填充。比例断言不能代替轨道与填充的可见性检查。

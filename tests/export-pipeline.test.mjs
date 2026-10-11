@@ -5,13 +5,13 @@ import { createBrowser } from './helpers/browser.mjs';
 import { loadModule } from './helpers/module.mjs';
 import { readFixture } from './helpers/dom.mjs';
 
-async function setup(t, markup) {
+async function setup(t, markup, extraGlobals = {}) {
   const { document, globals } = createBrowser(t, `<main data-message-author-role="assistant">${markup}</main><div id="mount"></div>`);
   const source = document.querySelector('main');
   const mount = document.querySelector('#mount');
   let preparedCard;
   const { createCard } = await loadModule('src/render.js', {
-    globals,
+    globals: { ...globals, ...extraGlobals },
     mocks: {
       // Resource decoding and PNG output require a real browser. All snapshot,
       // adapter, cleanup, card assembly and layout stages run unmodified.
@@ -28,6 +28,26 @@ async function setup(t, markup) {
     },
   };
 }
+
+test('public export pipeline captures visualization before cleanup and preserves the source iframe', async t => {
+  const origin = 'https://codex-inline-visualization-test.web-sandbox.oaiusercontent.com';
+  let listener;
+  const child = { postMessage: request => queueMicrotask(() => listener({ source: child, origin, data: {
+    ...request, type: 'result', ok: true, png: 'data:image/png;base64,aGVsbG8=', width: 800, height: 1000,
+  } })) };
+  const host = {
+    crypto: { randomUUID: () => 'unique' }, setTimeout, clearTimeout,
+    addEventListener: (_, callback) => { listener = callback; }, removeEventListener() {},
+  };
+  const { source, render } = await setup(t, `<p>Diagram</p><iframe title="Overflow" src="${origin}/"></iframe>`, { URL, window: host });
+  source.querySelector('iframe').contentWindow = child;
+  const before = source.outerHTML;
+  const { output, warnings } = await render();
+  assert.equal(output.querySelector('[data-export-iframe-snapshot]').alt, 'Overflow');
+  assert.equal(output.querySelector('iframe,.asset-warning,.export-image-frame'), null);
+  assert.equal(warnings.length, 0);
+  assert.equal(source.outerHTML, before);
+});
 
 test('mixed export snapshots preserve live form and checklist states without mutating the answer', async t => {
   const { source, render } = await setup(t, '<form data-d-component="form"><label>Name<input value="old"></label><label><input type="checkbox">Option</label><button>Submit</button></form><ul><li><input type="checkbox">Task</li></ul><p><span data-d-component="pressable" data-d-inline role="button">Entity</span></p><pre><code class="language-js">const answer = 42;</code></pre>');

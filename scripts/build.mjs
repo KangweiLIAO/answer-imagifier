@@ -6,6 +6,7 @@ await rm('dist', { recursive: true, force: true });
 await mkdir('dist', { recursive: true });
 await build({ entryPoints: ['src/content.js'], outfile: 'dist/content.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, loader: { '.css': 'text', '.svg': 'text', '.png': 'dataurl' }, legalComments: 'eof', plugins: [htmlToImageCsp] });
 await build({ entryPoints: ['src/popup.js'], outfile: 'dist/popup.js', bundle: true, format: 'iife', target: 'chrome120', minify: true });
+await build({ entryPoints: ['src/frame.js'], outfile: 'dist/frame.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, plugins: [htmlToImageCsp] });
 await cp('public/_locales', 'dist/_locales', { recursive: true });
 await cp('public/icons', 'dist/icons', { recursive: true });
 await copyFile('public/manifest.json', 'dist/manifest.json');

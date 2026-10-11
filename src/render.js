@@ -2,6 +2,7 @@ import { t } from './i18n.js';
 import { getAnswerRoot, getPrompt } from './dom.js';
 import { validLayout } from './layout.js';
 import { createSnapshot } from './export/snapshot.js';
+import { preserveIframeSnapshots } from './export/iframe-snapshots.js';
 import { adaptContent } from './export/adapters.js';
 import { preserveCode } from './export/adapters/code.js';
 import { cleanInteractiveContent, pruneEmptyWrappers } from './export/cleanup.js';
@@ -15,6 +16,7 @@ export async function createCard(answer, options, mount) {
   if (!validLayout(options)) throw new Error(t('invalidLayout'));
   const warnings = [];
   const context = createSnapshot(getAnswerRoot(answer), warnings, options);
+  await preserveIframeSnapshots(context);
   adaptContent(context);
   cleanInteractiveContent(context);
   preserveCode(context);

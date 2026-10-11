@@ -14,7 +14,7 @@
 4. 刷新 ChatGPT 对话页面。
 5. 等回答完成并出现原生操作栏后，点击该回答下方的「Export image / 导出长图」。插件不在 ChatGPT 原生分享弹窗中添加按钮。
 
-升级到 1.3.0 后，重新加载扩展并刷新已打开的 ChatGPT 页面。本次未新增权限，仍只使用 `storage` 保存本机导出偏好；旧版宽度设置会保留，旧 Compact layout 设置将忽略。
+升级后，重新加载扩展并刷新已打开的 ChatGPT 页面。除了 ChatGPT，扩展现在也在 `https://*.web-sandbox.oaiusercontent.com/*` 的 iframe 内注入截图脚本，用于导出内嵌可视化；`storage` 仍只保存本机导出偏好。旧版宽度设置会保留，旧 Compact layout 设置将忽略。
 
 ## 功能
 
@@ -49,7 +49,9 @@ npm test
 
 - 不调用 ChatGPT / OpenAI API，不读取 Cookie，不上传回答，不建立公开分享链接，不需要 API Key。
 - 引用卡片、网站图标和正文图片（包括 GPT 生成的图片）在渲染前移除，不下载这些图片；结构化图片卡片保留原始比例的占位框，并显示「Image」，以保持缩略图与网格布局；可关闭「显示图片占位」开关，仅保留文字并自动收紧布局，开关偏好保存在本机。生成图片请使用 ChatGPT 自带的下载功能。保留 SVG、可读取的 Canvas 图表和公式；公式字体仍受原站跨域和登录限制。
-- 任意 iframe、交互应用、音视频不会执行或截取，以说明文字替代。只导出当前 DOM 中已加载的内容。
+- ChatGPT sandbox 可视化 iframe 在原页面内转成静态 PNG 后嵌入长图；保留当前排版和主题，按导出内容宽度等比缩放，不随导出字号、图表大小或主题重新排版。支持 Skybridge 的同源内层 iframe。截图等待字体和图片，不修改原页面，不重新打开 iframe URL，不保存或上传内容。
+- 截图使用 DOM 栅格化，并非浏览器屏幕录像；外部资源限制、不可读取的嵌入或 Canvas/WebGL 可能无法完整捕获。未知域名 iframe、截图失败／超时（25 秒）和音视频继续以说明文字替代；离线保存的外层 DOM 无法还原跨域 iframe 图示。
+- sandbox 截图包含内部页面的图片，并可能请求字体和图片资源以生成 PNG；不沿用外部正文图片的排除规则。原生 Mapbox 地图属于主页面 Canvas，不进入 iframe 截图流程；现有两个地图样本仍为 fail，尚需单独修复和真实页面验证。
 - Mermaid 语法无效时保留源码并提示。数学公式依赖原页面可读取的字体
 - 特别长的回答会自动降低像素倍率，以限制内存占用和画布尺寸；仍然超限时显示错误，不静默裁切。
 
@@ -67,7 +69,7 @@ npm test
 - `src/panel.css`：面板样式。
 - `samples/intelligent-ui/`：真实回答样本的采集模板、参考截图与导出对照。
 - `tests/fixtures/`：自动化测试使用的精简 HTML。
-- `public/manifest.json`：Chrome Manifest V3 配置，仅匹配 ChatGPT 域名，仅申请 storage 权限。
+- `public/manifest.json`：Chrome Manifest V3 配置；ChatGPT 页面入口和 sandbox iframe 截图脚本分别匹配指定域名，API 权限仅为 storage。
 
 处理阶段、节点归属与新增组件步骤见 [架构说明](ARCHITECTURE.md)。
 
