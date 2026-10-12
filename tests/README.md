@@ -56,6 +56,9 @@ LinkeDOM 没有真实布局引擎；测试里的 Canvas 文字测量及内联样
 
 ## 共享控件与状态回归
 
+- `map-snapshots.test.mjs` 验证 Mapbox 缓冲配置范围、调用方参数不变、透明缓冲检测、标记／卡片保留、交互提示排除和 SVG sprite 静态化。`fixtures/map-route.html`、`map-tour.html` 来自两个真实样本的精简结构，避免测试依赖本机被忽略的样本目录。
+- 地图 PNG 验证需要检查实际 WebGL 像素、地图标签、可见卡片、卡片滚动位置、浅色／深色和窄宽度。离线 DOM 缺少底图像素时应输出提示，不能据此将地图样本标记为 pass。
+
 - `iframe-snapshots.test.mjs` 覆盖域名及 PNG 限制、消息窗口／origin／请求 ID 校验、超时监听清理、Skybridge 内层文档、失败提示及图片不受图表大小影响。`export-pipeline.test.mjs` 验证 iframe 捕获在普通清理前执行、源 iframe 保持不变。
 - iframe 截图还需浏览器 PNG 验证；本地回放只验证传输和栅格化，不能替代扩展在 ChatGPT sandbox 中的实际注入、CSP 与资源访问验收。
 

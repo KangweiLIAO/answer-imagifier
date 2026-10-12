@@ -200,6 +200,22 @@ export const messages = {
     "zh": "图表",
     "en": "Chart"
   },
+  "map": {
+    "zh": "地图与地点",
+    "en": "Map and places"
+  },
+  "mapBlocked": {
+    "zh": "地图画面未能读取。请重新加载扩展并刷新原对话，等地图加载完成后重试。",
+    "en": "Map pixels could not be captured. Reload the extension and refresh the conversation, then retry after the map loads."
+  },
+  "mapsBlocked": {
+    "zh": "部分地图未能导出，已用说明替代。",
+    "en": "Some maps could not be captured and were replaced with a note."
+  },
+  "mapImagesBlocked": {
+    "zh": "地图已保留，但部分地点缩略图无法读取，已显示图片占位。",
+    "en": "The map was captured, but some place thumbnails could not be read and were replaced with placeholders."
+  },
   "chartBlocked": {
     "zh": "此图表受浏览器限制，无法读取。",
     "en": "This chart cannot be read due to browser restrictions."

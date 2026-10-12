@@ -44,6 +44,8 @@ export function createSnapshot(source, warnings, options, readStyle = source => 
       copy.setAttribute('data-export-source-width', String(original.getBoundingClientRect().width));
     }
     if (original instanceof HTMLCanvasElement) {
+      // Native map widgets are captured as a whole, including their DOM labels.
+      if (original.matches('canvas.mapboxgl-canvas') && original.closest('[data-testid="businesses-map-widget"]')) return;
       try { const img = element('img'); img.src = original.toDataURL(); img.alt = t('chart'); img.setAttribute('data-export-source-width', String(original.getBoundingClientRect().width)); copy.replaceWith(img); }
       catch { copy.replaceWith(element('p', 'asset-warning', t('chartBlocked'))); warnings.push(t('chartsBlocked')); }
     }

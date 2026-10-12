@@ -49,6 +49,20 @@ test('public export pipeline captures visualization before cleanup and preserves
   assert.equal(source.outerHTML, before);
 });
 
+for (const name of ['map-route', 'map-tour']) {
+  test(`saved ${name} DOM reports missing map pixels instead of exporting empty space or gesture hints`, async t => {
+    const markup = await readFixture(name);
+    const { source, render } = await setup(t, markup, { setTimeout, clearTimeout });
+    const before = source.outerHTML;
+    const { output, warnings } = await render();
+    assert.equal(output.querySelector('[data-testid="businesses-map-widget"],canvas'), null);
+    assert.ok(output.querySelector('.asset-warning'));
+    assert.ok(warnings.some(message => message.includes('Some maps')));
+    assert.doesNotMatch(output.textContent, /Use two fingers|scroll to zoom/);
+    assert.equal(source.outerHTML, before);
+  });
+}
+
 test('mixed export snapshots preserve live form and checklist states without mutating the answer', async t => {
   const { source, render } = await setup(t, '<form data-d-component="form"><label>Name<input value="old"></label><label><input type="checkbox">Option</label><button>Submit</button></form><ul><li><input type="checkbox">Task</li></ul><p><span data-d-component="pressable" data-d-inline role="button">Entity</span></p><pre><code class="language-js">const answer = 42;</code></pre>');
   source.querySelector('input').value = 'current';

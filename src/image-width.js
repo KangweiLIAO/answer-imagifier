@@ -13,7 +13,7 @@ function aspectRatio(asset) {
 export function applyImageWidths(card, size = 'standard') {
   const preset = SIZES[size] || SIZES.standard;
   const assets = [...card.querySelectorAll('.answer-content img,.answer-content svg')].filter(asset =>
-    !asset.closest('[data-math],[data-checklist-box],[data-export-icon],[data-export-iframe-snapshot]') && !asset.parentElement.closest('svg'));
+    !asset.closest('[data-math],[data-checklist-box],[data-export-icon],[data-export-iframe-snapshot],[data-export-map-snapshot]') && !asset.parentElement.closest('svg'));
   return assets.map((asset, index) => {
     const parent = asset.parentElement;
     const style = getComputedStyle(parent);

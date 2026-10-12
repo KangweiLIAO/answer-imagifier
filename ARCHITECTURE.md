@@ -9,7 +9,8 @@ flowchart TD
     A[content.js：发现回答并挂载入口] --> B[panel.js：恢复设置、请求预览]
     B --> C[render.js：协调导出]
     C --> D[export/snapshot.js：克隆、原节点映射、必要样式和 Canvas]
-    D --> DS[export/iframe-snapshots.js：请求 sandbox 内截图]
+    D --> DM[export/map-snapshots.js：捕获原生地图组件]
+    DM --> DS[export/iframe-snapshots.js：请求 sandbox 内截图]
     DS --> E[export/adapters.js：按显式顺序转换内容]
     E --> F[export/cleanup.js：清理交互元素和不支持的嵌入]
     F --> G[adapters/code.js：从原节点恢复代码及原生 Mermaid]
@@ -30,6 +31,7 @@ flowchart TD
 | `render.js` | 编排导出阶段 | 不添加组件选择器或具体控件转换逻辑 |
 | `export/snapshot.js` | 建立 DOM 副本及来源映射；捕获可读取的 Canvas 和数学／SVG 样式 | 不修改原回答；过滤判断基于原 DOM |
 | `export/iframe-snapshots.js`、`frame-capture.js` | 在 sandbox 内栅格化当前可视化，再替换副本中的 iframe | 域名、消息来源和请求 ID 校验；不修改原页面；失败沿用嵌入提示 |
+| `map-buffer.js`、`export/map-snapshots.js` | 在地图初始化时保留 WebGL 绘制缓冲，导出时把整个地图组件转成 PNG | 仅匹配原生 Mapbox 地图；检查透明缓冲；不移动地图或修改源 DOM |
 | `export/adapters.js` | 固定适配顺序 | 适配器在清理按钮前读取原节点的实时属性 |
 | `export/adapters/` | 把内容转换为静态 DOM | 不操作面板、不保存设置、不下载资源 |
 | `export/cleanup.js` | 移除不应导出的节点、替换嵌入及清理空容器 | 必须保留适配器产生的静态内容 |
@@ -113,11 +115,17 @@ Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五�
 
 截图保持当前页面主题和排版，宽度随长图内容等比缩放。`applyImageWidths()` 跳过此标记，避免普通图表大小设置缩小整个页面。导出主题、字号不会改写截图内的内容。
 
-### 原生地图的支持边界
+## 原生地图截图
 
-`map-route-gym-eligibility` 和 `ottawa-walking-tour-map` 样本中的地图是主页面上的 `canvas.mapboxgl-canvas`，均没有 iframe，因此不会进入此截图流程。现有 Canvas 捕获仍由 `snapshot.js` 调用 `toDataURL()`；该调用未抛错也不代表捕获到了地图像素。
+`map-route-gym-eligibility` 和 `ottawa-walking-tour-map` 的地图是主页面上的 `canvas.mapboxgl-canvas`，均没有 iframe。地图所属的 `[data-testid="businesses-map-widget"]` 由单独截图阶段处理，普通 Canvas 继续使用 `snapshot.js`。只调用 `toDataURL()` 未抛错不代表地图像素存在。
 
-两个样本的实际导出均缺失地图，状态继续为 fail。WebGL 绘制缓冲、捕获时机及原 DOM 清理的影响需要在真实地图页面分别排查，不能凭保存的 HTML 确认根因。后续地图适配需同时保留画布、编号标记和标签，并在无法捕获时显示明确说明；本次 iframe 改动不包含地图修复，也未引入浏览器屏幕截图权限。
+`map-buffer-entry.js` 在 ChatGPT 页面 `document_start` 的 MAIN world 运行，包装 `HTMLCanvasElement.getContext()`，仅当 Canvas 匹配 Mapbox 类名且属于 `chatgpt-map-canvas` 时，对 WebGL 请求开启 `preserveDrawingBuffer`。已创建的上下文不能靠后续导出改变这个选项，因此扩展更新后必须刷新对话。其他 Canvas 和参数保持原调用方式；不查找 React 私有状态、不滚动或缩放地图、不注册持续截图任务。保留缓冲存在性能代价，Mapbox 默认关闭此选项是性能优化，见 [Mapbox 文档](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-parameters)。
+
+地图截图在普通适配／按钮清理之前执行，避免编号按钮、`aria-hidden` 地点标签和卡片一起丢失。先在独立 2D Canvas 排除透明或纯黑的清空缓冲，再通过 html-to-image 栅格化整个组件；这不能证明所有瓦片已加载，仍需原页面视觉核对。不支持的交互提示及展开控件被过滤，同源 SVG sprite 引用转换为静态矢量形状。数据源仍是原页面，不重新请求地图瓦片或重建路线。
+
+`scripts/html-to-image-scroll.mjs` 只在调用方设置 `preserveScrollPositions` 时，对克隆节点的子元素施加原滚动位置偏移，保留当前可见卡片和裁切范围。补丁在构建阶段应用，依赖升级时必须复查克隆流程；源节点不被滚动。
+
+成功输出 `img[data-export-map-snapshot]`，不受普通图表大小设置影响。地点缩略图因 CORS／网络失败而无法内联时，`onImageErrorHandler` 只在 html-to-image 的克隆图片上写入自包含占位 SVG，保留地图截图并单独发出缩略图警告。源图片不改动。透明、不可读、必需资源失败或 15 秒超时则将整个地图组件替换为说明并发出警告；控制台记录捕获错误原因。像素量限制沿用 1600 万。Ottawa 样本已有真实页面 Save PNG 的浅色 Automatic（1520×1604）和深色 600px（1200×1524）输出，底图、路线、标记、标签与卡片文字恢复；缩略图降级为占位，记录为 partial，并保留历史 fail 材料。另一地图样本待真实复验；测试 WebGL 底色和离线 DOM 验证不能代替实际地图 PNG。
 
 ## 构建与清理
 

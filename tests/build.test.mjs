@@ -11,6 +11,10 @@ test('extension injects the UI on ChatGPT and capture worker only on visualizati
   assert.deepEqual(manifest.content_scripts[1].js, ['frame.js']);
   assert.equal(manifest.content_scripts[1].all_frames, true);
   assert.ok((await readFile('dist/frame.js', 'utf8')).length > 0);
+  assert.deepEqual(manifest.content_scripts[2].matches, manifest.content_scripts[0].matches);
+  assert.deepEqual(manifest.content_scripts[2].js, ['map-buffer.js']);
+  assert.equal(manifest.content_scripts[2].world, 'MAIN');
+  assert.equal(manifest.content_scripts[2].run_at, 'document_start');
   assert.deepEqual(manifest.permissions, ['storage']);
   assert.equal(manifest.host_permissions, undefined);
 });
