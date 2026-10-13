@@ -18,7 +18,7 @@ export function createBrowser(t, markup) {
   return {
     document, window,
     globals: {
-      document, Element: window.Element, HTMLImageElement: window.HTMLImageElement,
+      document, URL, Element: window.Element, HTMLImageElement: window.HTMLImageElement,
       HTMLCanvasElement: window.HTMLCanvasElement, getComputedStyle: inlineStyle,
       requestAnimationFrame: callback => queueMicrotask(callback),
     },

@@ -5,6 +5,7 @@ import { preserveChecklist } from './adapters/checklist.js';
 import { preserveComponents } from './adapters/components.js';
 import { preserveImagePlaceholders } from './adapters/image-placeholder.js';
 import { preserveAnswerOptions } from './adapters/answer-options.js';
+import { preserveNetworkImages } from './adapters/network-images.js';
 
 // Order is intentional: answer options become inert before forms remove actions;
 // forms own their controls and checklists handle remaining checkboxes. Components
@@ -15,7 +16,8 @@ export const CONTENT_ADAPTERS = Object.freeze([
   Object.freeze({ id: 'form-controls', apply: ({ clone, sourceByCopy, readStyle }) => preserveFormControls(clone, sourceByCopy, readStyle) }),
   Object.freeze({ id: 'checklist', apply: ({ clone, sourceByCopy }) => preserveChecklist(clone, sourceByCopy) }),
   Object.freeze({ id: 'structured-layout', apply: ({ clone, sourceByCopy, readStyle }) => preserveComponents(clone, sourceByCopy, readStyle) }),
-  Object.freeze({ id: 'image-placeholders', apply: ({ clone, sourceByCopy, omitted, options }) => preserveImagePlaceholders(clone, sourceByCopy, omitted, t('imagePlaceholder'), options.showImagePlaceholders !== false) }),
+  Object.freeze({ id: 'network-images', apply: preserveNetworkImages }),
+  Object.freeze({ id: 'image-placeholders', apply: ({ clone, sourceByCopy, omitted, options }) => preserveImagePlaceholders(clone, sourceByCopy, omitted, t('imagePlaceholder'), options.showImages !== false) }),
 ]);
 
 export function adaptContent(context) {

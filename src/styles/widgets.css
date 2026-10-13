@@ -53,3 +53,8 @@
 .ai-card table[data-d-dividers] :is(th,td){padding:8px 10px}
 .ai-card table[data-export-table-layout]{table-layout:fixed!important}
 .ai-card table[data-export-table-layout] tr{height:auto}
+
+/* Structured network photos keep their authored card crop. */
+.ai-card [data-export-network-image-frame]{display:block;overflow:hidden;flex:none;line-height:0;border-radius:12px}
+.ai-card [data-export-network-image-frame] img{max-width:100%;margin:0}
+.ai-card [data-export-network-image-container]{margin:0!important;padding:0!important;gap:0;overflow:hidden;flex:none}

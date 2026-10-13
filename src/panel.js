@@ -1,6 +1,7 @@
 import { PLUGIN_NAME, t, locale } from './i18n.js';
 import panelCSS from './panel.css';
 import infoIcon from './assets/info.svg';
+import pluginLogo from '../public/icons/icon128.png';
 import cardCSS from './styles/card.js';
 import { element, getAnswers, fileName, isStreaming } from './dom.js';
 import { createCard, rasterize } from './render.js';
@@ -30,7 +31,7 @@ export function openPanel(preselected) {
   const dialog = element('dialog');
   dialog.setAttribute('aria-labelledby', 'ai-title');
   dialog.innerHTML = `<div class="shell">
-    <header class="topbar"><div class="identity"><span class="app-mark">${exportIcon}</span><div><h1 class="heading" id="ai-title">${t('exportImage')}</h1><p class="subheading">${PLUGIN_NAME.toUpperCase()}</p></div></div><button class="close" aria-label="${t('close')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <header class="topbar"><div class="identity"><span class="app-mark"><img src="${pluginLogo}" alt="" aria-hidden="true"></span><div><h1 class="heading" id="ai-title">${t('exportImage')}</h1><p class="subheading">${PLUGIN_NAME.toUpperCase()}</p></div></div><button class="close" aria-label="${t('close')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
     <div class="body"><aside class="sidebar">
       <div class="field filename-field"><label for="filename">${t('fileName')}</label><input type="text" id="filename" maxlength="120" autocomplete="off" spellcheck="false"></div>
       <div class="field"><span class="field-label" id="theme-label">${t('imageStyle')}</span><div class="segments" data-option="theme" role="group" aria-labelledby="theme-label"><button data-value="light" aria-pressed="true">${t('light')}</button><button data-value="dark" aria-pressed="false">${t('dark')}</button></div></div>
@@ -42,7 +43,7 @@ export function openPanel(preselected) {
       <div class="field spacing-field">${settingHeading('spacing', 'spacing-label')}<div class="segments" data-option="spacing" role="group" aria-labelledby="spacing-label"><button data-value="small" aria-pressed="false">${t('small')}</button><button data-value="standard" aria-pressed="true">${t('standard')}</button><button data-value="large" aria-pressed="false">${t('large')}</button></div></div>
       <label class="switch-row" for="autoRender">${t('autoRenderOnEntry')}<input type="checkbox" id="autoRender" role="switch"></label>
       <label class="switch-row" for="prompt">${t('includePrompt')}<input type="checkbox" id="prompt" role="switch"></label>
-      <label class="switch-row" for="showImagePlaceholders">${t('showImagePlaceholders')}<input type="checkbox" id="showImagePlaceholders" role="switch" checked></label>
+      <label class="switch-row" for="showImages">${t('showImages')}<input type="checkbox" id="showImages" role="switch" checked></label>
       <label class="switch-row" for="showCredit">${t('showExtensionCredit')}<input type="checkbox" id="showCredit" role="switch" checked></label>
       <div class="local-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>${t('localOnly')}</span></div>
     </aside><main class="workspace"><div class="preview-bar"><span class="preview-label"><span class="dot"></span>${t('preview')}</span><span class="dimensions">${t('preparing')}</span></div><div class="preview-scroll"><div class="placeholder hidden"></div><img class="preview-image hidden" alt="${t('previewAlt')}"></div><div class="render-overlay"><button class="action primary rerender" disabled>${t('startRender')}</button></div><footer class="bottom-bar"><div class="status" role="status" aria-live="polite"></div><button class="action copy" disabled><span>${t('copy')}</span></button><button class="action primary save" disabled>${downloadIcon}<span>${t('save', { format: 'PNG' })}</span></button></footer></main></div></div>`;
@@ -175,8 +176,8 @@ export function openPanel(preselected) {
     options.autoRender = event.target.checked;
     if (validLayout(options)) saveSettings(options);
   });
-  for (const name of ['widthMode', 'scale', 'prompt', 'showCredit', 'showImagePlaceholders']) $(`#${name}`).addEventListener('change', event => {
-    options[name] = ['prompt', 'showCredit', 'showImagePlaceholders'].includes(name) ? event.target.checked : name === 'widthMode' ? event.target.value : Number(event.target.value); if (validLayout(options)) saveSettings(options); settingsChanged();
+  for (const name of ['widthMode', 'scale', 'prompt', 'showCredit', 'showImages']) $(`#${name}`).addEventListener('change', event => {
+    options[name] = ['prompt', 'showCredit', 'showImages'].includes(name) ? event.target.checked : name === 'widthMode' ? event.target.value : Number(event.target.value); if (validLayout(options)) saveSettings(options); settingsChanged();
   });
   for (const name of ['width', 'customFontSize']) $(`#${name}`).addEventListener('input', event => {
     options[name] = event.target.value === '' ? NaN : Number(event.target.value);
@@ -232,7 +233,7 @@ export function openPanel(preselected) {
       });
     });
     for (const name of ['widthMode', 'width', 'scale', 'customFontSize']) $(`#${name}`).value = String(options[name]);
-    for (const name of ['prompt', 'showCredit', 'showImagePlaceholders', 'autoRender']) $(`#${name}`).checked = options[name];
+    for (const name of ['prompt', 'showCredit', 'showImages', 'autoRender']) $(`#${name}`).checked = options[name];
     controls.forEach(control => { control.disabled = false; });
     settingsReady = true;
     settingsChanged();

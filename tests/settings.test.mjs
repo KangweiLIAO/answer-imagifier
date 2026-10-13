@@ -66,8 +66,10 @@ test('auto-render on entry defaults off and accepts only boolean preferences', (
 });
 
 
-test('image placeholders default on and retain an explicit opt-out',()=>{
-  assert.equal(normalizeSettings({}).showImagePlaceholders,true);
-  assert.equal(normalizeSettings({showImagePlaceholders:false}).showImagePlaceholders,false);
-  assert.equal(normalizeSettings({showImagePlaceholders:'false'}).showImagePlaceholders,true);
+test('images default on, migrate the former placeholder preference and retain an explicit opt-out',()=>{
+  assert.equal(normalizeSettings({}).showImages,true);
+  assert.equal(normalizeSettings({showImages:false}).showImages,false);
+  assert.equal(normalizeSettings({showImages:'false'}).showImages,true);
+  assert.equal(normalizeSettings({showImagePlaceholders:false}).showImages,false);
+  assert.equal(normalizeSettings({showImages:true,showImagePlaceholders:false}).showImages,true);
 });

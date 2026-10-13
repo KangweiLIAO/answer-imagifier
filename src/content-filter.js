@@ -1,3 +1,4 @@
+import { isNetworkImageURL } from './shared/network-image.js';
 // Filter on the original DOM, before class names and image metadata are removed.
 const CITATIONS = [
   '[data-testid*="citation"]', '[data-citation-id]', '[data-citation-index]',
@@ -27,6 +28,9 @@ export function excludedContent(source) {
   // Image generation has its own native download flow. Omit its controls and
   // assets, while retaining ordinary SVG and Canvas charts in the answer.
   for (const image of source.querySelectorAll('img,picture,[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation]')) {
+    if (image.matches('img') && isNetworkImageURL(image.currentSrc || image.getAttribute('src')) &&
+        image.closest('[data-d-component="image"]') && !isSiteIcon(image) &&
+        !image.closest('[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation]')) continue;
     if (image.matches('img[data-d-component="svg"]') &&
         /^data:image\/svg\+xml[;,]/i.test(image.currentSrc || image.getAttribute('src') || '') &&
         !image.closest('[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation]')) continue;

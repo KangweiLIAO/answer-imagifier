@@ -49,6 +49,14 @@ test('public export pipeline captures visualization before cleanup and preserves
   assert.equal(source.outerHTML, before);
 });
 
+test('hiding images removes photo frames before resource preparation and keeps recommendation text', async t => {
+  const { render } = await setup(t, await readFixture('network-image-cards'));
+  const { output } = await render({ showImages: false });
+  assert.equal(output.querySelector('img,[data-d-component="image"],[data-export-image-placeholder],[data-export-network-image-container]'), null);
+  assert.match(output.textContent, /Fit4Less/);
+  assert.match(output.textContent, /Planet Fitness/);
+});
+
 for (const name of ['map-route', 'map-tour']) {
   test(`saved ${name} DOM reports missing map pixels instead of exporting empty space or gesture hints`, async t => {
     const markup = await readFixture(name);
@@ -62,6 +70,35 @@ for (const name of ['map-route', 'map-tour']) {
     assert.equal(source.outerHTML, before);
   });
 }
+
+test('standalone structured paragraphs keep block spacing without expanding card or list text', async t => {
+  const { source, render } = await setup(t, '<div><p data-d-component="text" data-d-text-flow>Intro</p><p data-d-component="text" data-d-text-flow>Recommendation</p><div data-d-component="box" data-d-has-border><p data-d-component="text" data-d-text-flow>Card text</p></div><ul><li><p data-d-component="text" data-d-text-flow>List text</p></li></ul></div>');
+  const before = source.outerHTML;
+  const { output } = await render();
+  assert.deepEqual([...output.querySelectorAll('[data-export-flow="paragraph"]')].map(p => p.textContent), ['Intro', 'Recommendation']);
+  assert.equal(output.querySelector('[data-export-component="box"] p').hasAttribute('data-export-flow'), false);
+  assert.equal(output.querySelector('li p').hasAttribute('data-export-flow'), false);
+  assert.equal(source.outerHTML, before);
+});
+
+test('real network photo cards preserve all images, crop positions and authored frames', async t => {
+  const { source, render } = await setup(t, await readFixture('network-image-cards'));
+  const before = source.outerHTML;
+  const { output } = await render();
+  assert.equal(output.querySelectorAll('img[data-export-network-image]').length, 3);
+  assert.equal(output.querySelectorAll('[data-export-network-image-container]').length, 3);
+  assert.equal(output.querySelector('[data-d-image-loading],button,[data-export-image-placeholder]'), null);
+  assert.equal(output.querySelector('img').style.objectPosition, '17.8% 50%');
+  for (const frame of output.querySelectorAll('[data-export-network-image-container]')) {
+    assert.equal(frame.style.maxWidth, '132px');
+    assert.equal(frame.style.height, 'auto');
+    assert.equal(frame.style.aspectRatio, '4 / 5');
+    assert.equal(frame.hasAttribute('data-export-shape'), false);
+  }
+  assert.match(output.textContent, /Fit4Less/);
+  assert.match(output.textContent, /Planet Fitness/);
+  assert.equal(source.outerHTML, before);
+});
 
 test('mixed export snapshots preserve live form and checklist states without mutating the answer', async t => {
   const { source, render } = await setup(t, '<form data-d-component="form"><label>Name<input value="old"></label><label><input type="checkbox">Option</label><button>Submit</button></form><ul><li><input type="checkbox">Task</li></ul><p><span data-d-component="pressable" data-d-inline role="button">Entity</span></p><pre><code class="language-js">const answer = 42;</code></pre>');

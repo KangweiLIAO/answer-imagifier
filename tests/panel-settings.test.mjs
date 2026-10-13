@@ -20,6 +20,8 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   });
   panel.openPanel(document.querySelector('#answer'));
   const root = document.querySelector('#answer-imagifier-root').shadowRoot;
+  assert.ok(root.querySelector('.app-mark img').src.startsWith('data:image/png;base64,'));
+  assert.equal(root.querySelector('.app-mark svg'), null);
   assert.equal(render,undefined);
   assert.equal(root.querySelector('#prompt').disabled,true);
   restore(saved);
@@ -27,7 +29,7 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(root.querySelector('[data-value="dark"]').getAttribute('aria-pressed'),'true');
   assert.equal(root.querySelector('#prompt').checked,true);
   assert.equal(root.querySelector('#showCredit').checked,true);
-  assert.equal(root.querySelector('#showImagePlaceholders').checked,true);
+  assert.equal(root.querySelector('#showImages').checked,true);
   assert.equal(root.querySelector('#filename').value,'Current conversation');
   assert.equal(root.querySelector('#autoRender').checked, autoRender);
   assert.equal(root.querySelector('#output-width-note').textContent, '');
@@ -47,9 +49,9 @@ for (const autoRender of [false, true]) test(`panel restores controls before its
   assert.equal(writes.at(-1).format,'jpg');
   assert.equal(root.querySelector('#compact'), null);
   assert.equal('compact' in writes.at(-1), false);
-  root.querySelector('#showImagePlaceholders').checked = false;
-  root.querySelector('#showImagePlaceholders').dispatchEvent(new window.Event('change'));
-  assert.equal(writes.at(-1).showImagePlaceholders,false);
+  root.querySelector('#showImages').checked = false;
+  root.querySelector('#showImages').dispatchEvent(new window.Event('change'));
+  assert.equal(writes.at(-1).showImages,false);
   root.querySelector('#showCredit').checked = false;
   root.querySelector('#showCredit').dispatchEvent(new window.Event('change'));
   assert.equal(writes.at(-1).showCredit, false);

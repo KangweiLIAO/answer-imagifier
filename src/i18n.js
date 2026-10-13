@@ -1,7 +1,7 @@
 export const PLUGIN_NAME = 'Answer Imagifier - for ChatGPT';
 
 export const messages = {
-  "showImagePlaceholders": { "zh": "显示图片占位", "en": "Show image placeholders" },
+  "showImages": { "zh": "显示图片", "en": "Show images" },
   "imagePlaceholder": { "zh": "Image", "en": "Image" },
   "settingHelp": { "zh": "{setting}说明", "en": "About {setting}" },
   "outputWidthEstimate": { "zh": "预计输出宽度：{width}px（{layout}px × {scale}）。自定义宽度可能导致排版异常。", "en": "Expected output width: {width}px ({layout}px × {scale}). Custom widths may cause layout issues." },
@@ -213,7 +213,7 @@ export const messages = {
     "en": "Some maps could not be captured and were replaced with a note."
   },
   "mapImagesBlocked": {
-    "zh": "地图已保留，但部分地点缩略图无法读取，已显示图片占位。",
+    "zh": "地图已保留，但部分地点缩略图无法读取，已显示图片。",
     "en": "The map was captured, but some place thumbnails could not be read and were replaced with placeholders."
   },
   "chartBlocked": {

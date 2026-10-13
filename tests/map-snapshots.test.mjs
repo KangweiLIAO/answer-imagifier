@@ -119,3 +119,24 @@ test('partial thumbnail failure keeps the map and reports a thumbnail warning', 
   assert.equal(context.warnings.length, 1);
   assert.match(context.warnings[0], /thumbnails/);
 });
+
+test('map photos use the restricted image loader, reuse results and report expected failures separately', async () => {
+  const { mapResourceLoader } = await loadModule('src/export/map-snapshots.js', { globals: { URL } });
+  let calls = 0; let failures = 0;
+  const loader = mapResourceLoader(() => { failures++; }, async url => { calls++; if (url.endsWith('bad')) throw new Error('Network unavailable'); return 'data:image/png;base64,AQID'; });
+  const good = 'https://images.openai.com/static-rsc-4/good';
+  assert.equal(await loader(good), 'data:image/png;base64,AQID');
+  await loader(good); assert.equal(calls, 1);
+  assert.equal(await loader('https://other.test/photo.png'), undefined);
+  const fallback = await loader('https://images.openai.com/static-rsc-4/bad');
+  assert.ok(fallback.startsWith('data:image/svg+xml;'));
+  assert.equal(failures, 1);
+});
+
+test('hiding map photos keeps the map canvas, numbered markers and card text', async t => {
+  const { document, globals } = createBrowser(t, `${widget}<span id="photo"><img></span>`);
+  const { includeMapNode } = await loadModule('src/export/map-snapshots.js', { globals });
+  assert.equal(includeMapNode(document.querySelector('#photo'), false), false);
+  assert.equal(includeMapNode(document.querySelector('img'), false), false);
+  for (const node of document.querySelectorAll('canvas,[data-map-marker-longitude] button,[role=listitem] button')) assert.equal(includeMapNode(node, false), true);
+});

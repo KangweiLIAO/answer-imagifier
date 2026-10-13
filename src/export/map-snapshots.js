@@ -2,6 +2,7 @@ import { toSvg } from 'html-to-image';
 import { t } from '../i18n.js';
 import { MAX_FRAME_PIXELS, MAX_FRAME_DATA_LENGTH } from './frame-protocol.js';
 import { timeout } from '../shared/timeout.js';
+import { isNetworkImageURL, loadImageData } from '../shared/network-image.js';
 
 export const MAP_WIDGET = '[data-testid="businesses-map-widget"]';
 const MAP_CANVAS = '[data-testid="chatgpt-map-canvas"] canvas.mapboxgl-canvas';
@@ -14,6 +15,18 @@ export function mapImageFallback(report) {
     image.removeAttribute('srcset');
     image.src = IMAGE_PLACEHOLDER;
     report();
+  };
+}
+
+export function mapResourceLoader(report, load = loadImageData) {
+  const resources = new Map();
+  return async url => {
+    if (!isNetworkImageURL(url)) return undefined;
+    if (!resources.has(url)) resources.set(url, load(url).catch(() => {
+      report();
+      return IMAGE_PLACEHOLDER;
+    }));
+    return resources.get(url);
   };
 }
 
@@ -32,8 +45,9 @@ export function hasMapPixels(canvas) {
   return false;
 }
 
-export function includeMapNode(node) {
+export function includeMapNode(node, showImages = true) {
   if (node.nodeType !== 1) return true;
+  if (!showImages && (node.matches('img,picture') || (node.children.length === 1 && node.firstElementChild.matches('img,picture')))) return false;
   if (node.matches('script,iframe,video,audio,object,embed,.mapboxgl-touch-pan-blocker,.mapboxgl-scroll-zoom-blocker')) return false;
   if (node.matches('button,[role="button"]')) {
     // Markers and place cards carry content. Expand/zoom controls do not.
@@ -74,8 +88,9 @@ export async function captureMapWidget(source, options) {
   const pixelRatio = Math.min(Math.max(1, Number(options.scale) || 2), 3, Math.sqrt(MAX_FRAME_PIXELS / (width * height)));
   let imagesBlocked = false;
   const svgURL = await toSvg(source, {
-    width, height, pixelRatio, skipAutoScale: true, filter: includeMapNode,
+    width, height, pixelRatio, skipAutoScale: true, filter: node => includeMapNode(node, options.showImages !== false),
     preserveScrollPositions: true,
+    resourceLoader: mapResourceLoader(() => { imagesBlocked = true; }),
     onImageErrorHandler: mapImageFallback(() => { imagesBlocked = true; }),
   });
   const svg = new DOMParser().parseFromString(decodeURIComponent(svgURL.slice(svgURL.indexOf(',') + 1)), 'image/svg+xml');
@@ -102,6 +117,7 @@ export async function preserveMapSnapshots({ clone, sourceByCopy, options, warni
       image.alt = t('map');
       image.width = result.width; image.height = result.height;
       image.setAttribute('data-export-map-snapshot', '');
+      image.setAttribute('data-export-flow', 'map');
       image.style.cssText = 'display:block;width:100%;height:auto;max-width:100%';
       copy.replaceWith(image);
       if (result.imagesBlocked) warnings.push(t('mapImagesBlocked'));

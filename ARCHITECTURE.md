@@ -73,7 +73,7 @@ rasterize(card, options)          // Promise<{ blob, layoutWidth, width, height,
 3. 表单：优先转换表单选择项和输入值，替换整个自定义控件，避免重复标记。
 4. 清单：只处理仍然存在的勾选控件；已经替换的表单选择项不会再转换。
 5. 结构化布局：保留卡片、行、网格、进度形状、实体文字及其他已支持组件的外层布局。
-6. 图片占位：处理被排除的结构化图片及其布局。
+6. 网络图片：保留受支持的代理图片及作者提供的比例、裁切位置和宽度；然后处理被排除的结构化图片占位。
 7. 清理交互元素后，从原代码节点生成高亮代码或原生 Mermaid 图片；最后清理空容器。
 
 第 7 步保留历史执行顺序，避免宿主代码工具栏或隐藏节点影响内容提取。数学／SVG 样式及 Canvas 捕获在快照阶段执行。
@@ -125,10 +125,20 @@ Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五�
 
 `scripts/html-to-image-scroll.mjs` 只在调用方设置 `preserveScrollPositions` 时，对克隆节点的子元素施加原滚动位置偏移，保留当前可见卡片和裁切范围。补丁在构建阶段应用，依赖升级时必须复查克隆流程；源节点不被滚动。
 
-成功输出 `img[data-export-map-snapshot]`，不受普通图表大小设置影响。地点缩略图因 CORS／网络失败而无法内联时，`onImageErrorHandler` 只在 html-to-image 的克隆图片上写入自包含占位 SVG，保留地图截图并单独发出缩略图警告。源图片不改动。透明、不可读、必需资源失败或 15 秒超时则将整个地图组件替换为说明并发出警告；控制台记录捕获错误原因。像素量限制沿用 1600 万。Ottawa 样本已有真实页面 Save PNG 的浅色 Automatic（1520×1604）和深色 600px（1200×1524）输出，底图、路线、标记、标签与卡片文字恢复；缩略图降级为占位，记录为 partial，并保留历史 fail 材料。另一地图样本待真实复验；测试 WebGL 底色和离线 DOM 验证不能代替实际地图 PNG。
+成功输出 `img[data-export-map-snapshot]`，不受普通图表大小设置影响。地点缩略图因 CORS／网络失败而无法内联时，`onImageErrorHandler` 只在 html-to-image 的克隆图片上写入自包含占位 SVG，保留地图截图并单独发出缩略图警告。源图片不改动。透明、不可读、必需资源失败或 15 秒超时则将整个地图组件替换为说明并发出警告；控制台记录捕获错误原因。像素量限制沿用 1600 万。以下为 1.3.1 的历史验收记录；1.3.2 的图片读取及开关验证见后文。Ottawa 样本已有真实页面 Save PNG 的浅色 Automatic（1520×1604）和深色 600px（1200×1524）输出，底图、路线、标记、标签与卡片文字恢复；缩略图降级为占位，记录为 partial，并保留历史 fail 材料。另一地图样本待真实复验；测试 WebGL 底色和离线 DOM 验证不能代替实际地图 PNG。
 
 ## 构建与清理
 
 构建先清空生成目录 `dist/`，再生成扩展资源，避免旧文件留在安装包中。源代码、样本模板和测试 fixture 不由构建删除。
 
 浏览器临时输出使用 `output/playwright/` 或临时目录，`.playwright-cli/` 与 `output/playwright/` 不提交。旧发布包在新包校验完成后清理；历史版本说明保留在 `changelog.md`。
+
+## 结构化网络图片（1.3.2）
+
+`content-filter.js` 保留结构化 image 组件内的 `https://images.openai.com/static-rsc-*/...` 图片，继续排除生成图片和 favicon。`network-images.js` 将 authored aspect-ratio、width、max-width 和 object-position 转换到导出节点，移除 loading UI；这些图片不受图表尺寸设置影响。
+
+`shared/network-image.js` 通过 runtime 消息向 `image-worker.js` 请求图片。worker 校验发送方为 ChatGPT 主 frame、URL 为唯一允许的 HTTPS 域名及 static 图片路径；匿名无 referrer 请求，禁止重定向，接受 PNG/JPEG/WebP/GIF/AVIF，流式限制 10 MiB，超时 12 秒。收到的 data URL 仅留在当前导出内存，正文图片解码后限制 1600 万像素；失败时仍显示图片占位并警告。地图截图通过 scripts/html-to-image-resources.mjs 的构建补丁传入受限 resourceLoader，复用相同后台通道；每次捕获内按完整 URL 复用结果，读取失败转换为占位并记录界面警告，其他资源保留库的原有行为。
+
+新增 host permission 仅为 `https://images.openai.com/*`。构建输出 image-worker.js 并在 manifest 注册 service_worker；隐私政策同步说明资源请求、权限和临时数据。扩展重载及站点权限生效后，用户提供的三张卡片照片已通过真实 Save PNG 验证，覆盖浅色 Automatic 与深色 600px；证据存于 output/playwright/network-images/。显示图片开关以 showImages 存储，兼容旧 showImagePlaceholders 偏好；关闭时在资源读取前移除正文照片／占位及地图卡片照片，但地图底图、标记、图表和 iframe 可视化保留。
+
+Show images 最新真实页面验证记录位于 output/playwright/image-switch/：开启／关闭的实际 Save PNG 分别为 1520×3594、1520×3078，关闭时正文与地图卡片照片消失，地图、标记和文字保留。按本轮开始时间过滤的页面 warning/error 日志为空；旧扩展管理页记录未被自动删除。

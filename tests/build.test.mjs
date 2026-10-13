@@ -16,5 +16,7 @@ test('extension injects the UI on ChatGPT and capture worker only on visualizati
   assert.equal(manifest.content_scripts[2].world, 'MAIN');
   assert.equal(manifest.content_scripts[2].run_at, 'document_start');
   assert.deepEqual(manifest.permissions, ['storage']);
-  assert.equal(manifest.host_permissions, undefined);
+  assert.deepEqual(manifest.host_permissions, ['https://images.openai.com/*']);
+  assert.equal(manifest.background.service_worker, 'image-worker.js');
+  assert.ok((await readFile('dist/image-worker.js', 'utf8')).length > 0);
 });
