@@ -67,8 +67,12 @@ LinkeDOM 没有真实布局引擎；测试里的 Canvas 文字测量及内联样
 - `components.test.mjs` 覆盖 0%、33.3333%、100% 宽度和变量引用的彩色填充。比例断言不能代替轨道与填充的可见性检查。
 - 修改共享 CSS 后检查实际 PNG：浅色／深色、Automatic／600px，以及小字号／标准字号下的箭头尺寸、垂直居中和日历位置。离线 DOM 配合测试样式的 PNG 验证不能代表已安装扩展在真实 ChatGPT 页面中的验收。
 
-- `network-images.test.mjs` 验证后台发送方／URL 校验、匿名请求、MIME 与流式大小限制、图片内联及失败布局。`network-image-cards.html` 来自用户提供的三种卡片 DOM，图片地址替换为固定 fixture URL；离线测试不证明实际网络图片已成功获取，真实 PNG 验收需要 images.openai.com 权限生效；本轮已保存浅色 Automatic 与深色 600px 的真实 PNG 至 output/playwright/network-images/。
+- `network-images.test.mjs` 验证后台发送方／URL 校验、匿名请求、MIME 与流式大小限制、图片内联及失败布局。`network-image-cards.html` 来自用户提供的三种卡片 DOM，图片地址替换为固定 fixture URL；离线测试不证明实际网络图片已成功获取，真实 PNG 验收需要 images.openai.com 权限生效；历史真实 PNG 已验证浅色 Automatic 与深色 600px；临时产物已于 2026-10-13 清理。
 
 - `image-resource-build.test.mjs` 验证生产 html-to-image 补丁先读取受限资源通道，绕开先前缓存的失败结果；地图测试覆盖读取复用与失败占位，开关回归确认关闭时保留地图／标记／卡片文字并在资源准备前移除正文照片。
 
-- `output/playwright/image-switch/` 保存当前真实页面 Show images 开／关 PNG 及新日志核对记录。本轮两次导出均无新的 Failed to fetch；历史管理页记录与新导出日志分别核对。
+- 历史真实页面 Show images 开／关 PNG 与新日志已完成核对，两次导出均无新的 Failed to fetch；历史管理页记录与新导出日志分别核对。临时 PNG／日志已于 2026-10-13 清理。
+
+- `writing-block.html` 保留用户提供的完整 Writing block 样本。导出集成测试验证编辑后的正文优先于缓存 Markdown、全部语义结构与来源 DOM 保留、编辑 UI 清理，以及普通 textbox／textarea 回归。
+
+- `svg-layout.test.mjs` 验证序列化副本中的文字容器／网格行重排、图形及控件尺寸保留、双色结束标记在缩放／亚像素边界下的识别、探测扩大重试及最终高度；结束位置无法确认时必须报错。需配合实际 PNG 检查换行、末段、边框和测量标记未进入输出，DOM 测试不能代替 SVG image 排版验收。

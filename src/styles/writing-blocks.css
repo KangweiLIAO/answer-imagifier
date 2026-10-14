@@ -1,0 +1,5 @@
+/* Writing documents retain semantic HTML and grow with their content. */
+.ai-card [data-export-writing-block]{display:flow-root;min-width:0;max-width:100%;height:auto;border:1px solid #dedede;border-radius:16px;padding:calc(16px * var(--spacing-scale));overflow-wrap:anywhere}
+.ai-card[data-theme=dark] [data-export-writing-block]{border-color:#494949}
+.ai-card [data-export-writing-block]>:first-child{margin-top:0}
+.ai-card [data-export-writing-block]>:last-child{margin-bottom:0}

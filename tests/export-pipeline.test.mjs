@@ -29,6 +29,31 @@ async function setup(t, markup, extraGlobals = {}) {
   };
 }
 
+test('real Writing block retains semantic content instead of becoming a plain textbox', async t => {
+  const { source, render } = await setup(t, await readFixture('writing-block'));
+  const editor = source.querySelector('[role="textbox"]');
+  editor.querySelector('h1').textContent = 'Edited document title';
+  const before = source.outerHTML;
+  const { output } = await render();
+  const block = output.querySelector('[data-export-writing-block]');
+  assert.ok(block);
+  for (const tag of ['h1', 'h2', 'p', 'ul', 'li', 'strong', 'code']) assert.equal(block.querySelectorAll(tag).length, editor.querySelectorAll(tag).length, tag);
+  assert.equal(block.querySelector('h1').textContent, 'Edited document title');
+  assert.equal(block.textContent, editor.textContent);
+  assert.equal(block.querySelector('[role="textbox"],[contenteditable],button,[data-export-form-control]'), null);
+  assert.equal(output.querySelector('[data-markdown-copy-text],[data-oai-writing-block-surface]'), null);
+  assert.match(output.textContent, /这版针对前面训练中/);
+  assert.equal(source.outerHTML, before);
+});
+
+test('Writing block adaptation does not change ordinary textboxes or textarea conversion', async t => {
+  const { render } = await setup(t, '<div data-testid="chatgpt-writing-block"><div role="textbox" aria-multiline="true"><h2>Document</h2><p><strong>Rich text</strong></p></div><button>Copy</button></div><div role="textbox" aria-valuetext="Form answer">Form answer</div><textarea>Long answer</textarea>');
+  const { output } = await render();
+  assert.equal(output.querySelector('[data-export-writing-block] h2').textContent, 'Document');
+  assert.equal(output.querySelector('[data-export-form-control=input]').textContent, 'Form answer');
+  assert.equal(output.querySelector('[data-export-form-control=textarea]').textContent, 'Long answer');
+});
+
 test('public export pipeline captures visualization before cleanup and preserves the source iframe', async t => {
   const origin = 'https://codex-inline-visualization-test.web-sandbox.oaiusercontent.com';
   let listener;

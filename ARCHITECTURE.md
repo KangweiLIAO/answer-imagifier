@@ -131,7 +131,9 @@ Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五�
 
 构建先清空生成目录 `dist/`，再生成扩展资源，避免旧文件留在安装包中。源代码、样本模板和测试 fixture 不由构建删除。
 
-浏览器临时输出使用 `output/playwright/` 或临时目录，`.playwright-cli/` 与 `output/playwright/` 不提交。旧发布包在新包校验完成后清理；历史版本说明保留在 `changelog.md`。
+浏览器临时输出使用 `output/playwright/` 或临时目录，`.playwright-cli/` 与 `output/playwright/` 不提交。验证结束后可以删除复现 HTML／DOM、临时脚本、截图和浏览器日志；需要长期保留的样本放入 `samples/intelligent-ui/`，自动化回归所需 DOM 放入 `tests/fixtures/`。旧发布包在新包校验完成后清理；历史版本说明保留在 `changelog.md`。
+
+2026-10-13 已清理上述浏览器临时目录和项目内的 `.DS_Store`。下文保留历史验证结论，临时 PNG／日志不再随项目保留；正式样本库、测试 fixture、当前构建和发布包未删除。
 
 ## 结构化网络图片（1.3.2）
 
@@ -139,6 +141,22 @@ Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五�
 
 `shared/network-image.js` 通过 runtime 消息向 `image-worker.js` 请求图片。worker 校验发送方为 ChatGPT 主 frame、URL 为唯一允许的 HTTPS 域名及 static 图片路径；匿名无 referrer 请求，禁止重定向，接受 PNG/JPEG/WebP/GIF/AVIF，流式限制 10 MiB，超时 12 秒。收到的 data URL 仅留在当前导出内存，正文图片解码后限制 1600 万像素；失败时仍显示图片占位并警告。地图截图通过 scripts/html-to-image-resources.mjs 的构建补丁传入受限 resourceLoader，复用相同后台通道；每次捕获内按完整 URL 复用结果，读取失败转换为占位并记录界面警告，其他资源保留库的原有行为。
 
-新增 host permission 仅为 `https://images.openai.com/*`。构建输出 image-worker.js 并在 manifest 注册 service_worker；隐私政策同步说明资源请求、权限和临时数据。扩展重载及站点权限生效后，用户提供的三张卡片照片已通过真实 Save PNG 验证，覆盖浅色 Automatic 与深色 600px；证据存于 output/playwright/network-images/。显示图片开关以 showImages 存储，兼容旧 showImagePlaceholders 偏好；关闭时在资源读取前移除正文照片／占位及地图卡片照片，但地图底图、标记、图表和 iframe 可视化保留。
+新增 host permission 仅为 `https://images.openai.com/*`。构建输出 image-worker.js 并在 manifest 注册 service_worker；隐私政策同步说明资源请求、权限和临时数据。扩展重载及站点权限生效后，用户提供的三张卡片照片已通过真实 Save PNG 验证，覆盖浅色 Automatic 与深色 600px；该轮临时证据已在项目清理时删除。显示图片开关以 showImages 存储，兼容旧 showImagePlaceholders 偏好；关闭时在资源读取前移除正文照片／占位及地图卡片照片，但地图底图、标记、图表和 iframe 可视化保留。
 
-Show images 最新真实页面验证记录位于 output/playwright/image-switch/：开启／关闭的实际 Save PNG 分别为 1520×3594、1520×3078，关闭时正文与地图卡片照片消失，地图、标记和文字保留。按本轮开始时间过滤的页面 warning/error 日志为空；旧扩展管理页记录未被自动删除。
+Show images 历史真实页面验证结果：开启／关闭的实际 Save PNG 分别为 1520×3594、1520×3078，关闭时正文与地图卡片照片消失，地图、标记和文字保留。按本轮开始时间过滤的页面 warning/error 日志为空；旧扩展管理页记录未被自动删除。
+
+## Writing block 适配
+
+`export/adapters/writing-blocks.js` 在普通表单转换之前识别 `[data-oai-writing-block-surface]`／`[data-testid="chatgpt-writing-block"]`，将多行 textbox 编辑器的已快照子节点移动到静态 section。保留 h1/h2、段落、列表、strong、行内 code 和现有来源映射，不使用可能滞后的 data-markdown-copy-text 重建内容。外层编辑 UI、role=textbox 和编辑属性不进入输出；普通输入框继续走表单适配。
+
+`styles/writing-blocks.css` 使用自动高度和标准边框，块间距复用 data-export-flow；内容跟随导出宽度、字体和主题排版，不复制原编辑器的固定高度，也不通过裁切隐藏末尾。完整样本 fixture 验证 9 个标题、33 个列表项、21 处加粗及尾随正文，源 DOM 保持不变。用户提供 DOM 的本地生产栅格化检查覆盖小字号、浅色 760px（1520×5760 PNG）和深色 600px（1200×6280 PNG），格式保留且末行位于边框内；该轮临时 PNG 已在项目清理时删除。用户已于 2026-10-13 确认真实扩展验收通过。
+
+## 栅格化时的文字重排
+
+普通 DOM 与 SVG image 的文字度量可能不同。已复现同一段正文在 DOM 中占两行、转图片后占三行；html-to-image 复制的固定段落高度导致后续文字覆盖。仅取消库的字号缩小处理未能消除此例。
+
+`rasterize.js` 先使用 html-to-image 内联资源并生成 SVG，再由 `svg-layout.js` 在独立的序列化副本中恢复段落、标题、列表、代码块、表格单元格及其祖先容器的自然高度；含文字的网格行也恢复自动高度。图形、数学、图片框、进度形状和静态表单控件保留自己的尺寸。源回答和暂存卡片均不修改。
+
+SVG 在图片上下文中以低分辨率探测实际内容结束位置；双色标记在最终渲染前移除。探测空间不足时在既有画布轴长／像素限制内扩大重试，最终按测得高度重新计算导出倍率并生成 PNG／JPG。不能确认结束位置或超出限制则报错，不按旧 DOM 高度裁切。此流程增加一次 SVG 图片解码和低分辨率绘制，不涉及网络上传。
+
+故障正文的本地生产流程 PNG 已覆盖浅色／深色、760px／600px，760px 输出从旧的 1520×1418 改为 1520×1462，覆盖消失且末尾完整。普通正文与完整长 Writing block 另以 600px 检查，长文档为 1200×6324；末段和边框保留。复现脚本及临时 PNG 使用系统临时目录，不进入项目。用户已于 2026-10-13 确认真实扩展验收通过；1.3.3 发布提交在独立目录构建并通过 99 项测试，其他历史样本的状态保持原记录。

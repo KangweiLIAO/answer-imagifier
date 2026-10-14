@@ -2,6 +2,7 @@ import base from './base.css';
 import components from './components.css';
 import typography from './typography.css';
 import widgets from './widgets.css';
+import writingBlocks from './writing-blocks.css';
 
 // Keep the established cascade order when composing Shadow DOM styles.
-export default base + components + typography + widgets;
+export default base + components + typography + widgets + writingBlocks;
