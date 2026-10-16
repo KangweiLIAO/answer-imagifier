@@ -1,8 +1,11 @@
-const WRITING_BLOCK = '[data-oai-writing-block-surface],[data-testid="chatgpt-writing-block"]';
+import { WRITING_BLOCK_SELECTOR, WRITING_EDITOR_SELECTOR } from '../../chatgpt/selectors.js';
 
-export function preserveWritingBlocks({ clone }) {
-  for (const surface of clone.querySelectorAll(WRITING_BLOCK)) {
-    const editor = surface.querySelector('[role="textbox"][aria-multiline="true"]');
+export function preserveWritingBlocks(context) {
+  const { clone } = context;
+  const surfaces = [...clone.querySelectorAll(WRITING_BLOCK_SELECTOR)];
+  if (clone.matches(WRITING_BLOCK_SELECTOR)) surfaces.unshift(clone);
+  for (const surface of surfaces) {
+    const editor = surface.querySelector(WRITING_EDITOR_SELECTOR);
     if (!editor) continue;
     const block = clone.ownerDocument.createElement('section');
     block.setAttribute('data-export-writing-block', '');
@@ -10,6 +13,7 @@ export function preserveWritingBlocks({ clone }) {
     // Move the existing snapshot nodes so downstream adapters retain their
     // source mappings. Live editor content wins over cached Markdown metadata.
     block.append(...editor.childNodes);
-    surface.replaceWith(block);
+    if (surface === clone) context.clone = block;
+    else surface.replaceWith(block);
   }
 }

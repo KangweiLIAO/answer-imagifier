@@ -1,0 +1,11 @@
+/* Answer action: divider stays outside the borderless hover surface. */
+button[data-answer-imagifier]{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:max-content!important;min-width:max-content!important;max-width:none!important;min-height:32px;box-sizing:border-box;flex-shrink:0;margin:0;padding:4px 8px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:inherit;font:inherit;font-size:13px;font-weight:500;line-height:1.5;cursor:pointer;white-space:nowrap}
+button[data-answer-imagifier=export]{margin-inline-start:10px}
+button[data-answer-imagifier=writing-block]{margin-inline-end:4px;min-height:36px}
+button[data-answer-imagifier=export]::before{content:"";position:absolute;inset-inline-start:-6px;top:50%;width:1px;height:16px;transform:translateY(-50%);background:color-mix(in srgb,currentColor 20%,transparent);pointer-events:none}
+button[data-answer-imagifier]>svg{width:20px;height:20px;flex:none}
+button[data-answer-imagifier]:is(:hover,:focus-visible){background:color-mix(in srgb,currentColor 8%,transparent)}
+button[data-answer-imagifier]:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+/* CSS-only hints appear immediately, without the native title delay. */
+button[data-answer-imagifier]>.ai-entry-tooltip{position:absolute;z-index:10;top:calc(100% + 6px);inset-inline-end:0;width:max-content;max-width:min(240px,calc(100vw - 32px));padding:6px 10px;border-radius:6px;background:#333;color:#fff;-webkit-text-fill-color:currentColor;box-shadow:0 3px 10px #0002;font:400 12px/1.5 system-ui;text-align:start;white-space:normal;pointer-events:none;visibility:hidden;opacity:0;transition:none}
+button[data-answer-imagifier]:is(:hover,:focus-visible)>.ai-entry-tooltip{visibility:visible;opacity:1}

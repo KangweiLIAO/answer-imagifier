@@ -84,6 +84,53 @@ test('content script reuses buttons, handles replaced answers and streaming comp
   assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
 });
 
+test('Writing entries target individual blocks, survive toolbar replacement and leave native actions intact', async t => {
+  const { document, window } = setup(t, fixture);
+  const answer = document.querySelector('#answer');
+  const blockHTML = id => `<div data-testid="chatgpt-writing-block" id="${id}"><header><div>Writing</div><div><span><button aria-label="Copy"></button></span><button aria-label="Open editor"></button></div></header><div role="textbox" aria-multiline="true"><p>${id}</p></div></div>`;
+  answer.innerHTML = blockHTML('one') + blockHTML('two') + `<div role="dialog">${blockHTML('dialog-block')}</div><p>Outside text</p>`;
+  let observer, scheduled;
+  const opened = [];
+  await loadModule('src/content.js', {
+    globals: {
+      document, Element: window.Element,
+      MutationObserver: class { constructor(callback) { observer = callback; } observe() {} },
+      setTimeout: callback => { scheduled = callback; return 1; },
+    },
+    mocks: { 'src/panel.js': { openPanel: (...args) => opened.push(args), exportIcon: '<svg></svg>' } },
+  });
+  const rescan = () => { observer([{ target: document.body }]); scheduled(); };
+  rescan(); rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier=export]').length, 1);
+  assert.equal(document.querySelectorAll('[data-answer-imagifier=writing-block]').length, 2);
+  for (const id of ['one', 'two']) {
+    const block = document.getElementById(id);
+    const button = block.querySelector('[data-answer-imagifier]');
+    assert.equal(button.parentElement, block.querySelector('header').lastElementChild);
+    assert.equal(button.parentElement.firstElementChild, button);
+    assert.equal(block.querySelectorAll('button:not([data-answer-imagifier])').length, 2);
+    button.click();
+    assert.equal(opened.at(-1)[0], answer);
+    assert.equal(opened.at(-1)[1].writingBlock, block);
+  }
+  const first = document.getElementById('one');
+  first.querySelector('header').replaceWith(document.getElementById('two').querySelector('header').cloneNode(true));
+  // React replaces the toolbar with native controls, without our injected entry.
+  first.querySelector('[data-answer-imagifier]').remove();
+  rescan();
+  assert.equal(first.querySelectorAll('[data-answer-imagifier]').length, 1);
+  const detachedButton = first.querySelector('[data-answer-imagifier]');
+  first.remove();
+  detachedButton.click();
+  assert.equal(opened.length, 2);
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier=writing-block]').length, 1);
+  answer.setAttribute('data-is-streaming', 'true'); rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
+  answer.removeAttribute('data-is-streaming'); rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier=writing-block]').length, 1);
+});
+
 test('hidden speaker headings are omitted and do not make an empty answer exportable', t => {
   const { document } = setup(t, fixture);
   const answer = document.querySelector('#answer');

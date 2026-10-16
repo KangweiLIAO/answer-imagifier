@@ -1,6 +1,8 @@
 export const PLUGIN_NAME = 'Answer Imagifier - for ChatGPT';
 
 export const messages = {
+  "exportWritingBlock": { "zh": "导出此区块", "en": "Export block" },
+  "exportWritingBlockHint": { "zh": "将此区块导出为格式化长图", "en": "Export this block as a formatted long image" },
   "showImages": { "zh": "显示图片", "en": "Show images" },
   "imagePlaceholder": { "zh": "Image", "en": "Image" },
   "settingHelp": { "zh": "{setting}说明", "en": "About {setting}" },

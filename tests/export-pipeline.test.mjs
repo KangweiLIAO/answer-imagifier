@@ -21,8 +21,8 @@ async function setup(t, markup, extraGlobals = {}) {
   });
   return {
     source,
-    render: async (options = {}) => {
-      const result = await createCard(source, { ...DEFAULT_SETTINGS, showCredit: false, ...options }, mount);
+    render: async (options = {}, target = source) => {
+      const result = await createCard(target, { ...DEFAULT_SETTINGS, showCredit: false, ...options }, mount);
       assert.equal(preparedCard, result.card);
       return { ...result, output: result.card.querySelector('.answer-content') };
     },
@@ -43,6 +43,21 @@ test('real Writing block retains semantic content instead of becoming a plain te
   assert.equal(block.querySelector('[role="textbox"],[contenteditable],button,[data-export-form-control]'), null);
   assert.equal(output.querySelector('[data-markdown-copy-text],[data-oai-writing-block-surface]'), null);
   assert.match(output.textContent, /这版针对前面训练中/);
+  assert.equal(source.outerHTML, before);
+});
+
+test('a Writing surface can be exported alone using current rich editor content', async t => {
+  const { source, render } = await setup(t, await readFixture('writing-block'));
+  const surface = source.querySelector('[data-oai-writing-block-surface]');
+  const editor = surface.querySelector('[role="textbox"]');
+  editor.querySelector('h1').textContent = 'Current edited title';
+  const before = source.outerHTML;
+  const { output } = await render({ prompt: false }, surface);
+  assert.ok(output.matches('[data-export-writing-block]'));
+  assert.equal(output.textContent, editor.textContent);
+  for (const tag of ['h1', 'h2', 'p', 'ul', 'li', 'strong', 'code']) assert.equal(output.querySelectorAll(tag).length, editor.querySelectorAll(tag).length, tag);
+  assert.equal(output.querySelector('button,[role="textbox"],[data-markdown-copy-text]'), null);
+  assert.doesNotMatch(output.textContent, /这版针对前面训练中/);
   assert.equal(source.outerHTML, before);
 });
 

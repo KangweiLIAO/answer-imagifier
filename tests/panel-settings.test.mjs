@@ -4,6 +4,50 @@ import { DEFAULT_SETTINGS } from '../src/settings.js';
 import { createBrowser } from './helpers/browser.mjs';
 import { loadModule } from './helpers/module.mjs';
 
+test('block export is scoped, excludes prompts without changing saved preferences, and rejects stale targets', async t => {
+  const { document, globals } = createBrowser(t, `<div id="answer" data-message-author-role="assistant"><p>Outside</p><div id="block" data-testid="chatgpt-writing-block"><div role="textbox" aria-multiline="true"><h1>Document title</h1><p>Inside</p></div></div><div id="other">Unrelated</div></div>`);
+  document.title = 'Conversation';
+  const answer = document.querySelector('#answer'), block = document.querySelector('#block');
+  let render;
+  const renders = [], writes = [];
+  const panel = await loadModule('src/panel.js', {
+    globals: { ...globals, setTimeout: callback => { render = callback; return 1; }, clearTimeout: () => {} },
+    mocks: {
+      'src/settings.js': { DEFAULT_SETTINGS, loadSettings: async () => ({ ...DEFAULT_SETTINGS, prompt: true }), saveSettings: value => writes.push({ ...value }) },
+      'src/render.js': { createCard: async (source, options) => { renders.push({ source, options }); throw Error('Rendering intentionally stubbed'); }, rasterize: async () => {} },
+      'src/i18n.js': { PLUGIN_NAME: 'Test', locale: 'en', t: key => key },
+    },
+  });
+  panel.openPanel(answer, { writingBlock: document.querySelector('#other') });
+  assert.equal(document.querySelector('#answer-imagifier-root'), null);
+  panel.openPanel(answer, { writingBlock: block });
+  await Promise.resolve();
+  let root = document.querySelector('#answer-imagifier-root').shadowRoot;
+  assert.equal(root.querySelector('.heading').textContent, 'exportWritingBlock');
+  assert.equal(root.querySelector('#filename').value, 'Document title');
+  assert.ok(root.querySelector('label[for="prompt"]').classList.contains('hidden'));
+  root.querySelector('[data-option=theme] [data-value=dark]').click();
+  assert.equal(writes.at(-1).prompt, true);
+  root.querySelector('.rerender').click(); await render();
+  assert.equal(renders[0].source, block);
+  assert.equal(renders[0].options.prompt, false);
+  block.remove();
+  root.querySelector('.rerender').click(); await render();
+  assert.equal(renders.length, 1);
+  assert.equal(root.querySelector('.status').textContent, 'conversationChanged');
+  root.querySelector('.close').click();
+  panel.openPanel(answer, { writingBlock: block });
+  assert.equal(document.querySelector('#answer-imagifier-root'), null);
+  panel.openPanel(answer);
+  await Promise.resolve();
+  root = document.querySelector('#answer-imagifier-root').shadowRoot;
+  assert.equal(root.querySelector('#prompt').checked, true);
+  assert.ok(!root.querySelector('label[for="prompt"]').classList.contains('hidden'));
+  root.querySelector('.rerender').click(); await render();
+  assert.equal(renders.at(-1).source, answer);
+  assert.equal(renders.at(-1).options.prompt, true);
+});
+
 for (const autoRender of [false, true]) test(`panel restores controls before its first preview (auto entry: ${autoRender}) and saves changes without exporting`, async t => {
   const {document,window,globals} = createBrowser(t, '<div id="answer" data-message-author-role="assistant">Answer</div>');
   document.title = 'Current conversation';

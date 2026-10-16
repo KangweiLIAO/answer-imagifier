@@ -1,30 +1,38 @@
-import { PLUGIN_NAME, t, locale } from './i18n.js';
+import { t, locale } from './i18n.js';
 import { getAnswers, getTurn, getActionRow, isAnswerReady, STREAMING_SELECTOR, isStreaming } from './dom.js';
 import { openPanel, exportIcon } from './panel.js';
+import entryCSS from './entry.css';
+import { WRITING_BLOCK_SELECTOR, WRITING_EDITOR_SELECTOR } from './chatgpt/selectors.js';
 
 const marker = 'data-answer-imagifier';
-const streamingStyle = document.createElement('style');
-streamingStyle.textContent = `body:has(${STREAMING_SELECTOR}) [${marker}]{display:none!important}`;
-document.head.append(streamingStyle);
-function makeButton(targetAnswer) {
+const entryStyle = document.createElement('style');
+entryStyle.textContent = entryCSS + `
+body:has(${STREAMING_SELECTOR}) [${marker}]{display:none!important}
+`;
+document.head.append(entryStyle);
+let hintId = 0;
+function makeButton(targetAnswer, writingBlock) {
   const button = document.createElement('button');
-  button.type = 'button'; button.lang = locale === 'zh' ? 'zh-CN' : 'en'; button.setAttribute(marker, 'export');
-  button.setAttribute('aria-label', t('exportImage'));
-  button.title = `${PLUGIN_NAME} · ${t('exportImage')}`;
-  button.innerHTML = `${exportIcon}<span>${t('exportImage')}</span>`;
-  button.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border:1px solid color-mix(in srgb,currentColor 15%,transparent);border-radius:9px;background:transparent;color:inherit;font:500 13px/1.4 system-ui;cursor:pointer;white-space:nowrap;min-height:36px;flex-shrink:0;margin-inline:12px;';
-  // ChatGPT gives action buttons a fixed icon width; this control also has a label.
-  button.style.setProperty('width', 'max-content', 'important');
-  button.style.setProperty('min-width', 'max-content', 'important');
-  button.style.setProperty('max-width', 'none', 'important');
-  button.style.setProperty('box-sizing', 'border-box');
-  button.querySelector('svg').style.cssText = 'width:17px;height:17px;flex:none;';
-  button.addEventListener('mouseenter', () => { button.style.background = 'color-mix(in srgb,currentColor 7%,transparent)'; });
-  button.addEventListener('mouseleave', () => { button.style.background = 'transparent'; });
+  const label = t(writingBlock ? 'exportWritingBlock' : 'exportImage');
+  button.type = 'button'; button.lang = locale === 'zh' ? 'zh-CN' : 'en'; button.setAttribute(marker, writingBlock ? 'writing-block' : 'export');
+  button.setAttribute('aria-label', label);
+  button.innerHTML = `${exportIcon}<span>${label}</span>`;
+  if (writingBlock) {
+    const hint = document.createElement('span');
+    hint.id = `answer-imagifier-hint-${++hintId}`;
+    hint.className = 'ai-entry-tooltip';
+    hint.setAttribute('role', 'tooltip');
+    hint.textContent = t('exportWritingBlockHint');
+    button.setAttribute('aria-describedby', hint.id);
+    button.append(hint);
+  }
   button.addEventListener('click', event => {
     event.preventDefault(); event.stopPropagation();
     if (!isAnswerReady(targetAnswer)) return;
-    if (targetAnswer.isConnected) openPanel(targetAnswer);
+    if (!targetAnswer.isConnected) return;
+    if (writingBlock) {
+      if (targetAnswer.contains(writingBlock)) openPanel(targetAnswer, { writingBlock });
+    } else openPanel(targetAnswer);
   });
   return button;
 }
@@ -40,6 +48,15 @@ function isNativeAction(button) {
   return isShareButton(button) || /^(Copy(?: response)?|Good response|Bad response|Read aloud|Try again(?:…|\.{3})?|Regenerate(?: response)?|More(?: actions| options)?|复制|複製|赞|踩|朗读|重新生成|重试|更多(?:操作|选项)?)$/i.test(label);
 }
 const buttons = new Map();
+const writingButtons = new Map();
+function writingToolbar(block) {
+  if (!block.querySelector(WRITING_EDITOR_SELECTOR) || block.closest('[role="dialog"],[role="menu"]')) return null;
+  const header = block.querySelector('header');
+  let actions = header?.querySelector('button[aria-label="Copy"],button[aria-label="复制"],button[aria-label="複製"]');
+  if (!actions) return null;
+  while (actions.parentElement !== header) actions = actions.parentElement;
+  return actions;
+}
 function placeAnswerButton(answer, turn) {
   const button = buttons.get(answer) || makeButton(answer);
   buttons.set(answer, button);
@@ -63,12 +80,24 @@ function placeAnswerButton(answer, turn) {
 }
 function scan() {
   const answers = getAnswers().filter(isAnswerReady);
+  const writingBlocks = new Set();
   for (const [answer, button] of buttons) {
     if (!answers.includes(answer)) { button.remove(); buttons.delete(answer); }
   }
   for (const answer of answers) {
     const turn = getTurn(answer);
     placeAnswerButton(answer, turn);
+    for (const block of answer.querySelectorAll(WRITING_BLOCK_SELECTOR)) {
+      const toolbar = writingToolbar(block);
+      if (!toolbar) continue;
+      writingBlocks.add(block);
+      const button = writingButtons.get(block) || makeButton(answer, block);
+      writingButtons.set(block, button);
+      if (toolbar.firstElementChild !== button) toolbar.prepend(button);
+    }
+  }
+  for (const [block, button] of writingButtons) {
+    if (!writingBlocks.has(block)) { button.remove(); writingButtons.delete(block); }
   }
 }
 let timer;

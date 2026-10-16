@@ -8,6 +8,7 @@ import { createCard, rasterize } from './render.js';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
 import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
 import { CORNER_RADIUS } from './image-style.js';
+import { WRITING_BLOCK_SELECTOR, WRITING_EDITOR_SELECTOR } from './chatgpt/selectors.js';
 
 export const exportIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
 const downloadIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>';
@@ -18,20 +19,24 @@ function settingHeading(key, id, control) {
   return `<div class="field-heading">${title}<span class="setting-help"><button type="button" class="info-button" aria-label="${t('settingHelp', { setting: t(key) })}" aria-describedby="${id}-help">${infoIcon}</button><span class="setting-tooltip" id="${id}-help" role="tooltip">${t(`${key}Help`)}</span></span></div>`;
 }
 let active = false;
-export function openPanel(preselected) {
+export function openPanel(preselected, { writingBlock } = {}) {
   if (active) return;
-  active = true;
   const answers = getAnswers();
+  // A stale or unrelated block must never silently fall back to a whole answer.
+  if (writingBlock && (!answers.includes(preselected) || !preselected.contains(writingBlock) || !writingBlock.matches(WRITING_BLOCK_SELECTOR) || !writingBlock.querySelector(WRITING_EDITOR_SELECTOR))) return;
+  active = true;
   const answer = preselected && answers.includes(preselected) ? preselected : answers.at(-1);
+  const target = writingBlock || answer;
   const options = { ...DEFAULT_SETTINGS };
-  const defaultFileName = document.title.trim().replace(/\s+[-–—|]\s+ChatGPT$/i, '').trim();
+  const conversationName = document.title.trim().replace(/\s+[-–—|]\s+ChatGPT$/i, '').trim();
+  const defaultFileName = writingBlock ? writingBlock.querySelector(`${WRITING_EDITOR_SELECTOR} h1,${WRITING_EDITOR_SELECTOR} h2`)?.textContent.trim() || `${conversationName} - Writing` : conversationName;
   const host = element('div'); host.id = 'answer-imagifier-root'; host.lang = locale === 'zh' ? 'zh-CN' : 'en';
   const shadow = host.attachShadow({ mode: 'open' });
   const style = element('style'); style.textContent = panelCSS + cardCSS; shadow.append(style);
   const dialog = element('dialog');
   dialog.setAttribute('aria-labelledby', 'ai-title');
   dialog.innerHTML = `<div class="shell">
-    <header class="topbar"><div class="identity"><span class="app-mark"><img src="${pluginLogo}" alt="" aria-hidden="true"></span><div><h1 class="heading" id="ai-title">${t('exportImage')}</h1><p class="subheading">${PLUGIN_NAME.toUpperCase()}</p></div></div><button class="close" aria-label="${t('close')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <header class="topbar"><div class="identity"><span class="app-mark"><img src="${pluginLogo}" alt="" aria-hidden="true"></span><div><h1 class="heading" id="ai-title">${t(writingBlock ? 'exportWritingBlock' : 'exportImage')}</h1><p class="subheading">${PLUGIN_NAME.toUpperCase()}</p></div></div><button class="close" aria-label="${t('close')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
     <div class="body"><aside class="sidebar">
       <div class="field filename-field"><label for="filename">${t('fileName')}</label><input type="text" id="filename" maxlength="120" autocomplete="off" spellcheck="false"></div>
       <div class="field"><span class="field-label" id="theme-label">${t('imageStyle')}</span><div class="segments" data-option="theme" role="group" aria-labelledby="theme-label"><button data-value="light" aria-pressed="true">${t('light')}</button><button data-value="dark" aria-pressed="false">${t('dark')}</button></div></div>
@@ -42,7 +47,7 @@ export function openPanel(preselected) {
       <div class="field diagram-size-field">${settingHeading('diagramSize', 'diagram-size-label')}<div class="segments" data-option="diagramSize" role="group" aria-labelledby="diagram-size-label"><button data-value="small" aria-pressed="false">${t('small')}</button><button data-value="standard" aria-pressed="true">${t('standard')}</button><button data-value="large" aria-pressed="false">${t('large')}</button></div></div>
       <div class="field spacing-field">${settingHeading('spacing', 'spacing-label')}<div class="segments" data-option="spacing" role="group" aria-labelledby="spacing-label"><button data-value="small" aria-pressed="false">${t('small')}</button><button data-value="standard" aria-pressed="true">${t('standard')}</button><button data-value="large" aria-pressed="false">${t('large')}</button></div></div>
       <label class="switch-row" for="autoRender">${t('autoRenderOnEntry')}<input type="checkbox" id="autoRender" role="switch"></label>
-      <label class="switch-row" for="prompt">${t('includePrompt')}<input type="checkbox" id="prompt" role="switch"></label>
+      <label class="switch-row${writingBlock ? ' hidden' : ''}" for="prompt">${t('includePrompt')}<input type="checkbox" id="prompt" role="switch"></label>
       <label class="switch-row" for="showImages">${t('showImages')}<input type="checkbox" id="showImages" role="switch" checked></label>
       <label class="switch-row" for="showCredit">${t('showExtensionCredit')}<input type="checkbox" id="showCredit" role="switch" checked></label>
       <div class="local-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>${t('localOnly')}</span></div>
@@ -121,14 +126,15 @@ export function openPanel(preselected) {
     updateRerender();
     const version = revision;
     const snapshot = { ...options };
+    if (writingBlock) snapshot.prompt = false;
     try {
       // The first frame presents the busy state; start DOM cloning only after
       // the browser has had an intervening opportunity to paint it.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       if (closed || version !== revision) return;
-      if (!answer.isConnected) throw new Error(t('conversationChanged'));
+      if (!answer.isConnected || !target.isConnected || (writingBlock && (!answer.contains(writingBlock) || !writingBlock.querySelector(WRITING_EDITOR_SELECTOR)))) throw new Error(t('conversationChanged'));
       if (isStreaming()) throw new Error(t('streaming'));
-      const { card, warnings } = await createCard(answer, snapshot, mount);
+      const { card, warnings } = await createCard(target, snapshot, mount);
       const rendered = await rasterize(card, snapshot);
       if (closed || version !== revision) return;
       if (url) URL.revokeObjectURL(url);
