@@ -1,39 +1,65 @@
+**English** | [简体中文](README.zh-CN.md)
+
 # Answer Imagifier - for ChatGPT
 
-把 **ChatGPT 单独一条回答或一个 Writing block** 渲染成一张完整的 PNG / JPG 格式化长图。
+Turn one finished ChatGPT answer into a single clean PNG or JPG. Code highlighting, tables, math, Mermaid diagrams, cards, and supported maps stay in the picture, so you can save or share the whole reply without stitching screenshots.
 
-当前版本：**1.3.6**。本版修复照片与 SVG 图示混排卡片的大小、标题对齐、间距和圆角裁切，并清理照片浮层；独立图表保留三档缩放。详细内容见 [更新日志](changelog.md)。
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/llhbppnankbnkddcmhfejoegcembkdfe?label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe) [![Users](https://img.shields.io/chrome-web-store/users/llhbppnankbnkddcmhfejoegcembkdfe)](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe) [![Rating](https://img.shields.io/chrome-web-store/rating/llhbppnankbnkddcmhfejoegcembkdfe)](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe) [![License: MIT](https://img.shields.io/github/license/KangweiLIAO/answer-imagifier)](LICENSE)
 
-## 安装
+## Add to Chrome
 
-从源码安装时，先按下方「构建与测试」生成 `dist/`（构建产物不提交到 Git）。如果已有构建好的 `dist/`，可直接加载。
+**[Add to Chrome](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe)**
 
-1. 在 Chrome 地址栏打开 `chrome://extensions`。
-2. 打开右上角「开发者模式」。
-3. 点击「加载已解压的扩展程序」，选择本项目的 `dist` 文件夹。
-4. 刷新 ChatGPT 对话页面。
-5. 等回答完成并出现原生操作栏后，点击该回答下方的「Export image / 导出长图」。插件不在 ChatGPT 原生分享弹窗中添加按钮。
-6. 单独导出 Writing block 时，点击区块右上角复制按钮左侧的「Export block / 导出此区块」。悬停或键盘聚焦会立即显示提示；只导出该区块内容，不包含提问和区块外正文。
+Free on the Chrome Web Store. It runs on [chatgpt.com](https://chatgpt.com) and [chat.openai.com](https://chat.openai.com), and needs Chrome 120 or later. This repository’s manifest is **1.3.6**, the same version as the store listing. Answer Imagifier is an independent extension and is not affiliated with OpenAI.
 
-升级后，重新加载扩展并刷新已打开的 ChatGPT 页面。除了 ChatGPT，扩展现在也在 `https://*.web-sandbox.oaiusercontent.com/*` 的 iframe 内注入截图脚本，用于导出内嵌可视化。地图需要刷新页面，让新增的页面脚本在 WebGL 上下文创建前生效；`storage` 仍只保存本机导出偏好。旧版宽度设置会保留，旧 Compact layout 设置将忽略。
+![Demo of exporting a ChatGPT answer as one long image](public/vids/demo.gif)
 
-## 功能
+The animation and the stills below are from an earlier build. The width control is now labeled **Layout width**.
 
-- 将单条 ChatGPT 回答导出为完整的 PNG / JPG 长图，或复制 PNG 到剪贴板。
-- 保留代码高亮、表格、数学公式、Mermaid 图表和结构化卡片。
-- 支持单独导出 Writing block，也可随整条回答一起导出；保留标题、段落、列表、加粗和行内代码；转图片时按重排后的实际高度生成长图，避免换行增加造成文字覆盖或末尾裁切。
-- 保留待办列表的完成状态，以及问卷的当前选择和填写内容；互动控件以静态快照呈现，操作按钮不导出。
-- 将成组的结构化测验选项转换为静态答案，保留选项内容与已有反馈图标；保留进度填充比例。下拉框和日期选择器共用 SVG 箭头及主题样式。
-- 提供浅色／深色主题，自动／自定义宽度，以及字号、图表尺寸、排版间距和清晰度调整。
-- 可选择包含提问、显示／隐藏图片或隐藏扩展署名；实体名称与网格布局保留。
-- 先调整设置再生成预览，也可开启进入时自动渲染；修改设置后手动重新生成。
-- 图片在本机生成，导出偏好仅保存在本机。
+<p>
+  <img src="public/imgs/0.png" alt="Export image button on the action row under a finished ChatGPT answer" width="420">
+  <img src="public/imgs/1.png" alt="Export panel showing a light-theme preview, with format and layout controls" width="420">
+</p>
 
-Automatic 会结合字号、表格列数和每列文字宽度选择排版宽度，优先保留短列的可读宽度，长说明正常换行；达到 1600px 上限后仍允许换行。含合并单元格或明确指定列宽的表格保留原布局。
+<img src="public/imgs/3.png" alt="Exported image with a formula, syntax-highlighted Python, and a table" width="720">
 
-自定义的排版宽度不是最终像素宽度：输出像素宽度 = 排版宽度 × 清晰度倍数。例如 1500px 配合 2× 清晰度，输出为 3000px；自定义模式下会显示预计值，并提醒自定义宽度可能导致排版异常。
+## Features
 
-## 构建与测试
+- Export one finished answer as a PNG or JPG long image, or copy it to the clipboard. Clipboard copies are PNG even when the save format is JPG.
+- On a Writing block, **Export block** (to the left of Copy) exports that block alone: headings, paragraphs, lists, bold text, and inline code. The prompt and the rest of the answer stay out of that image. The same block is included when you export the whole answer.
+- Keep syntax-highlighted code, tables, math, and Mermaid diagrams. If Mermaid syntax is invalid, the image keeps the source and a short notice.
+- Keep structured cards, quizzes, checklists, and form values as they look now. Controls in the image are static. Checklists keep checked and partially checked states, including a nested checkbox sitting beside its label. Segmented controls keep the selected option: a full-width control shares the row evenly across its options, and long labels wrap inside their own segment.
+- Keep alignment, declared column widths, spacing, and rounded clipping from the answer. Schedules and stat cards use those declared widths. A photo mixed with an SVG diagram keeps its size, crop, and the card title beside it; loading, action, and source-link overlays on that photo are left out. A standalone diagram still follows the diagram size setting.
+- Capture supported ChatGPT sandbox visualizations and native Mapbox maps as still images, scaled to the export width.
+- Choose light or dark, automatic or custom layout width (600–1600 px), resolution (1×, 2×, or 3×), font size (including a custom 12–24 px size), diagram size, and spacing.
+- Optionally include your prompt, show or hide photos, show or hide the extension credit, and auto-render when the panel opens.
+- Output pixel width is layout width × resolution. A 760 px layout at 2× is 1520 px wide. Automatic width follows font size and table content, up to 1600 px. Custom width shows that estimate in the panel.
+
+Very long answers may be rendered at a lower scale so the full image still fits. If it still cannot, export stops with an error and does not crop the answer. Generated images are omitted; use ChatGPT’s own download for those. An answer that is only a generated image, with its status and edit controls, does not get an Export image button. A mixed answer still exports the text around that image.
+
+## How to use
+
+1. **Add the extension** from the Chrome Web Store, then open a conversation on chatgpt.com or chat.openai.com.
+2. **Wait until the answer finishes.** Click **Export image** on that answer’s action row, beside ChatGPT’s own controls (including image actions such as Adobe Express). For a Writing block only, click **Export block** beside its Copy button.
+3. **Set appearance and layout, then click Start render.** Save PNG or JPG, or copy the image. After you change a setting, render again to refresh the preview. Turn on auto-render if you want that to happen when the panel opens.
+
+The button is on the answer itself, not inside ChatGPT’s share dialog.
+
+## Privacy
+
+Images are rendered locally in your browser. The extension does not upload your conversations, call the ChatGPT or OpenAI API, read cookies, or create public share links.
+
+The only entry under `permissions` is `storage`. It remembers export preferences on this device (theme, format, width, resolution, type size, diagram size, spacing, and the toggles above). Those preferences are not synced through Chrome. Uninstalling the extension removes them. Conversations, custom file names, and generated images are not written to extension storage.
+
+Host access to `https://images.openai.com/*` lets a background worker read supported photos inside structured cards. That request sends the image URL only, without cookies or your answer text. While drawing, Chrome may also load fonts and similar page assets from their original hosts. Those assets are not sent to the extension author.
+
+Details: [Privacy policy](PRIVACY_POLICY.md).
+
+## Install from source / development
+
+`public/manifest.json` in this repository is **1.3.6**. `dist/` and release zips are build output and are not committed.
+
+Node.js 20.19 or later (the lockfile’s packages declare that engine):
 
 ```sh
 npm ci
@@ -41,56 +67,19 @@ npm run build
 npm test
 ```
 
-`npm run build` 将全部运行时依赖打包到扩展里，不从 CDN 加载脚本。构建后在扩展管理页点击刷新，并刷新 ChatGPT 页面。
+`npm run build` bundles runtime dependencies into the extension. It does not load scripts from a CDN. `npm test` builds, then runs the Node test suite.
 
-测试分层、公共工具和替代依赖边界见 [测试维护说明](tests/README.md)。
+1. Open `chrome://extensions`.
+2. Turn on Developer mode.
+3. Choose **Load unpacked** and select this project’s `dist` folder.
+4. Refresh the ChatGPT tab. After you pull or rebuild, reload the extension and refresh the page again. Map capture needs that refresh so it can run before the map’s WebGL context is created.
 
-发布包从通过测试的 `dist/` 生成，解压后根目录直接包含 `manifest.json`：
+A release zip is taken from a tested `dist/` so the archive root contains `manifest.json`. Keep `package.json`, `package-lock.json`, and `public/manifest.json` on the same version, then rebuild:
 
 ```sh
 (cd dist && zip -r ../v1.3.6.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
-版本号需同步 `package.json`、`package-lock.json` 和 `public/manifest.json`，然后重新构建。新包与 `dist/` 内容及版本核对通过后，再删除旧包；当前构建和发布包保留在本机，不提交到 Git。
+Pipeline, module boundaries, and how to add a component: [Architecture notes](docs/ARCHITECTURE.md) (Chinese). Test layout: [tests/README.md](tests/README.md). Release notes: [changelog.md](changelog.md) (Chinese). `samples/intelligent-ui/` is an optional local sample folder and is gitignored; automated fixtures live in `tests/fixtures/`. Open follow-ups, including an unresolved blank SVG in some dark mixed-content samples, stay in the [Chinese README](README.zh-CN.md).
 
-## 隐私与边界
-
-- 仅保存导出偏好，不保存对话、图片或自定义文件名；详情见 [隐私政策](PRIVACY_POLICY.md)。
-
-- 不调用 ChatGPT / OpenAI API，不读取 Cookie，不上传回答，不建立公开分享链接，不需要 API Key。
-- 支持结构化图片卡片中由 `images.openai.com/static-rsc-*` 提供的网络图片，保留图片比例、裁切位置和卡片排版；图片在扩展后台匿名读取并转为内存 data URL。读取失败时显示占位并提示，可关闭「显示图片」隐藏正文图片及占位框，并停止这些图片的读取；地图卡片照片同时隐藏，底图、标记、图表及可视化保留。生成图片、引用卡片、网站图标和其他正文图片继续排除；生成图片请使用 ChatGPT 自带的下载功能。保留 SVG、可读取的 Canvas 图表和公式；公式字体仍受原站跨域和登录限制。
-- ChatGPT sandbox 可视化 iframe 在原页面内转成静态 PNG 后嵌入长图；保留当前排版和主题，按导出内容宽度等比缩放，不随导出字号、图表大小或主题重新排版。支持 Skybridge 的同源内层 iframe。截图等待字体和图片，不修改原页面，不重新打开 iframe URL，不保存或上传内容。
-- 截图使用 DOM 栅格化，并非浏览器屏幕录像；外部资源限制、不可读取的嵌入或 Canvas/WebGL 可能无法完整捕获。未知域名 iframe、截图失败／超时（25 秒）和音视频继续以说明文字替代；离线保存的外层 DOM 无法还原跨域 iframe 图示。
-- sandbox 与原生地图截图包含组件内部的图片，并可能请求字体、图片和同源 SVG 图标资源以生成 PNG；不沿用外部正文图片的排除规则。
-- 原生 Mapbox 地图使用独立截图流程，整体保留画布、编号标记、可见地点标签和卡片及当前卡片滚动位置，移除移动／缩放提示和展开操作。输出按内容宽度等比缩放，保持地图当时的主题。地点缩略图读取失败时，单独使用图片占位并提示，不丢弃地图；透明或纯黑的清空缓冲、不可读或超时的地图显示明确说明；这项检测不能判断所有地图瓦片是否已加载，导出前仍需确认原页面地图完整。
-- 扩展在 ChatGPT 页面加载时，只对原生 Mapbox 地图的 WebGL 上下文开启 `preserveDrawingBuffer`，以便之后读取像素；这可能增加地图渲染开销，不改变其他 Canvas 的上下文配置。不新增屏幕截图权限，不移动或缩放原地图。Ottawa 样本已在真实页面验证浅色 Automatic 与深色 600px 的底图、路线和标记恢复；这次 1.3.1 的历史结果因地点照片占位记为 partial。1.3.2 已在健身房推荐的真实页面验证后台读取恢复地图照片、图片开关开／关生效，且未产生新的 Failed to fetch；其他历史样本不据此自动改为通过。
-- Mermaid 语法无效时保留源码并提示。数学公式依赖原页面可读取的字体
-- 特别长的回答会自动降低像素倍率，以限制内存占用和画布尺寸；仍然超限时显示错误，不静默裁切。
-
-## 结构
-
-- `src/content.js` / `src/dom.js`：回答识别、生成状态及导出入口；宿主回答选择器集中在 `src/chatgpt/selectors.js`。
-- `src/panel.js` / `src/settings.js`：预览面板、导出操作及本机偏好。
-- `src/render.js`：导出流程协调，保留 `createCard()` / `rasterize()` 接口。
-- `src/export/`：快照、适配器顺序、清理、长图组装、资源加载、布局及图片输出。
-- `src/export/adapters/`：结构化布局、表单、清单、图标、图片占位和代码块的静态转换。
-- `src/shared/`：适配器共用的勾选标记、颜色判断及异步超时。
-- `src/code-block.js` / `src/code-language.js` / `src/math-style.js`：代码与数学内容处理。
-- `src/layout.js` / `src/table-layout.js` / `src/image-width.js` / `src/block-spacing.js`：排版策略与测量。
-- `src/styles/`：长图基础、组件、字号／间距和控件样式；按固定顺序合并到 Shadow DOM。
-- `src/panel.css`：面板样式。
-- `samples/intelligent-ui/`：本机可选的真实样本、参考截图与导出对照，已由 Git 忽略；构建与测试不依赖此目录。
-- `tests/fixtures/`：自动化测试使用的精简 HTML。
-- `public/manifest.json`：Chrome Manifest V3 配置；ChatGPT 页面入口和 sandbox iframe 截图脚本分别匹配指定域名，API 权限为 storage，另需 `https://images.openai.com/*` 的网络图片访问权限；后台只接受 ChatGPT 主页面的指定图片路径请求。
-
-处理阶段、节点归属与新增组件步骤见 [架构说明](ARCHITECTURE.md)。
-
-实现参考：[Chrome 内容脚本文档](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)、[html-to-image 项目文档](https://github.com/bubkoo/html-to-image)。
-
-## 后续事项
-
-- 当前工作区已通过 127 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。
-
-- 新兼容性案例保留来源 DOM、当前交互状态、原页面参考图、导出设置和实际导出图；长期样本可放在本机 `samples/intelligent-ui/`，自动化回归结构放在 `tests/fixtures/`。没有完整参考图或真实页面复验时，明确记录 pending／partial／fail。
-
-- 部分混合内容的本地深色 PNG 样本中，内嵌 SVG 架构图出现空白；单独图表样本导出正常，原因尚未定位，需进一步验证。小图标与提示卡片修复已单独验证。
+The in-page UI follows Chrome’s language: English, or Simplified Chinese for any Chinese locale (including Traditional Chinese browser settings). The Web Store listing is published in English, Simplified Chinese, and Traditional Chinese.

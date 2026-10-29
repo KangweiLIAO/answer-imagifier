@@ -1,5 +1,9 @@
 # 导出架构
 
+> English: pipeline notes for turning one ChatGPT answer into a static image. The sections below are in Chinese. The preview panel calls `createCard()` and `rasterize()` only.
+
+[English README](../README.md) · [简体中文 README](../README.zh-CN.md)
+
 本项目把 ChatGPT 单条回答的当前内容和交互状态转换为静态长图。组件兼容逻辑与面板、资源加载、排版和图片输出分别维护。
 
 ## 处理流程
@@ -116,7 +120,7 @@ rasterize(card, options)          // Promise<{ blob, layoutWidth, width, height,
 6. 为状态丢失、重复转换或清理误删等风险增加有意义的测试；可将真实样本提炼成 `tests/fixtures/`。
 7. 运行 `npm test`，再检查浅色、深色、窄宽度与交互后的实际 PNG。
 
-测试维护约定见 [tests/README.md](tests/README.md)。导出集成测试调用真实 `createCard()`，避免在测试内维护另一套阶段顺序。
+测试维护约定见 [tests/README.md](../tests/README.md)。导出集成测试调用真实 `createCard()`，避免在测试内维护另一套阶段顺序。
 
 仅采集样本不会自动接入测试。未知组件当前沿用既有通用清理行为。
 
@@ -209,3 +213,21 @@ SVG 在图片上下文中以低分辨率探测实际内容结束位置；双色�
 ## 嵌套 checkbox 标签布局（2026-10-28）
 
 `checklist.js` 优先寻找包裹控件的 label，或按 id／for 匹配关联标签所在的最近共同容器，再回退到结构化 row。通过比较属性值避免特殊字符 ID 的选择器转义问题。静态清单行标记放在实际包含标记和文字的容器，确保横向 flex、标签收缩换行与 SVG 尺寸规则能作用于正确子节点；li 列表的独立路径保持不变。机会筛选卡的旧路径把标记放到外层 row，内层宿主类名被清除后成为 block，导致 label 下移 20px。修复后五项恢复左右排列，间距 8px。本地浅色 1568×1020 与深色 600px 长标题 1200×1222 PNG 已核对，源 DOM 不变、无水平溢出。127 项测试通过，包含 checked／mixed、特殊 ID、真实嵌套标签及控件清理。临时验证产物清理，正式 opportunity-checklist fixture 保留；真实 ChatGPT 页面重载验收仍待完成。
+
+## 目录
+
+- `src/content.js` / `src/dom.js`：回答识别、生成状态及导出入口；宿主回答选择器集中在 `src/chatgpt/selectors.js`。
+- `src/panel.js` / `src/settings.js`：预览面板、导出操作及本机偏好。
+- `src/render.js`：导出流程协调，保留 `createCard()` / `rasterize()` 接口。
+- `src/export/`：快照、适配器顺序、清理、长图组装、资源加载、布局及图片输出。
+- `src/export/adapters/`：结构化布局、表单、清单、图标、图片占位和代码块的静态转换。
+- `src/shared/`：适配器共用的勾选标记、颜色判断及异步超时。
+- `src/code-block.js` / `src/code-language.js` / `src/math-style.js`：代码与数学内容处理。
+- `src/layout.js` / `src/table-layout.js` / `src/image-width.js` / `src/block-spacing.js`：排版策略与测量。
+- `src/styles/`：长图基础、组件、字号／间距和控件样式；按固定顺序合并到 Shadow DOM。
+- `src/panel.css`：面板样式。
+- `samples/intelligent-ui/`：本机可选的真实样本、参考截图与导出对照，已由 Git 忽略；构建与测试不依赖此目录。
+- `tests/fixtures/`：自动化测试使用的精简 HTML。
+- `public/manifest.json`：Chrome Manifest V3 配置；ChatGPT 页面入口和 sandbox iframe 截图脚本分别匹配指定域名，API 权限为 storage，另需 `https://images.openai.com/*` 的网络图片访问权限；后台只接受 ChatGPT 主页面的指定图片路径请求。
+
+实现参考：[Chrome 内容脚本文档](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)、[html-to-image 项目文档](https://github.com/bubkoo/html-to-image)。
