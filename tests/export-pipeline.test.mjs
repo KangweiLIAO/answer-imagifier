@@ -69,6 +69,89 @@ test('Writing block adaptation does not change ordinary textboxes or textarea co
   assert.equal(output.querySelector('[data-export-form-control=textarea]').textContent, 'Long answer');
 });
 
+test('real checklist plan retains all task labels, live states and progress shapes', async t => {
+  const { source, render } = await setup(t, await readFixture('checklist-plan'));
+  source.querySelector('[role=checkbox]').setAttribute('aria-checked', 'true');
+  const before = source.outerHTML;
+  const labels = [...source.querySelectorAll('label')].map(label => label.textContent);
+  const { output } = await render({ fontSize: 'small', widthMode: 'custom', width: 600 });
+  const rows = [...output.querySelectorAll('[data-export-checklist-row]')];
+  assert.equal(rows.length, 16);
+  assert.deepEqual(rows.map(row => row.querySelector('label').textContent), labels);
+  assert.equal(rows[0].getAttribute('data-checklist-state'), 'checked');
+  assert.equal(rows.filter(row => row.getAttribute('data-checklist-state') === 'unchecked').length, 15);
+  assert.equal(output.querySelectorAll('[data-export-shape]').length, source.querySelectorAll('[data-d-has-height]').length);
+  assert.equal(output.querySelectorAll('[data-d-has-border]').length, 4);
+  assert.equal(output.querySelector('button,[role=checkbox]'), null);
+  assert.match(output.textContent, /最终验收标准/);
+  assert.equal(source.outerHTML, before);
+});
+
+test('schedule survives snapshot and cleanup with six cards and all fixed time columns', async t => {
+  const { source, render } = await setup(t, await readFixture('expo-schedule'));
+  const before = source.outerHTML;
+  const text = source.textContent;
+  const { output } = await render({ widthMode: 'custom', width: 600, fontSize: 'large' });
+  assert.equal(output.querySelectorAll('[data-d-has-border]').length, 6);
+  const columns = [...output.querySelectorAll('[data-d-has-width]')];
+  assert.equal(columns.length, 22);
+  assert.ok(columns.every(column => column.style.width === '100px'));
+  assert.equal(output.querySelector('[data-export-shape]'), null);
+  assert.equal(output.textContent, text);
+  assert.equal(source.outerHTML, before);
+});
+
+test('workspace retains centered metric labels, intrinsic inline link groups and component heading ownership', async t => {
+  const { source, render } = await setup(t, await readFixture('interview-workspace'));
+  const original = source.outerHTML;
+  const { output } = await render();
+  const grid = output.querySelector('[data-export-component=grid]');
+  assert.deepEqual([...grid.querySelectorAll('p')].map(e => e.textContent), ['英文问答', '通用主题', '初始公司档案']);
+  assert.equal(grid.querySelector('[data-export-flow]'), null);
+  assert.equal(output.querySelector('[data-d-has-border] [data-export-flow]'), null);
+  const groups = [...output.querySelectorAll('[data-d-inline][data-export-width]')];
+  assert.equal(groups.length, 2);
+  assert.ok(groups.every(group => group.style.width === 'max-content' && group.getAttribute('data-export-width') === 'max-content' && group.querySelector('svg[data-export-icon]')));
+  assert.equal(output.querySelectorAll('[data-export-flow=heading]').length, 2);
+  assert.equal(source.outerHTML, original);
+});
+
+test('review widget preserves live mode, all six notes and local separator ownership through the complete pipeline', async t => {
+  const {source, render} = await setup(t, await readFixture('interview-review'));
+  const radios = [...source.querySelectorAll('[data-d-component=segmented-control] [role=radio]')];
+  radios.forEach((radio, i) => radio.setAttribute('aria-checked', String(i === radios.length - 1)));
+  const original = source.outerHTML;
+  const {output} = await render({widthMode: 'custom', width: 600, fontSize: 'large'});
+  const group = output.querySelector('[data-export-form-control=segmented]');
+  assert.ok(group.hasAttribute('data-export-block'));
+  assert.equal(group.querySelector('[data-export-selected=true]').textContent, radios.at(-1).textContent.trim());
+  assert.equal(output.querySelectorAll('hr[data-export-component=divider]').length, 7);
+  assert.equal(output.querySelector('[data-d-has-border] [data-export-flow]'), null);
+  for (const text of ['System Architecture', '50% Throughput', '30% Inference Performance', '98% Feature Generation', 'Docker & 40% Setup Time', 'Refactoring & BLE']) assert.ok(output.textContent.includes(text), text);
+  assert.equal(output.querySelector('button,[role=radio],[role=combobox]'), null);
+  assert.equal(output.querySelectorAll('[data-export-form-control=arrow]').length, 1);
+  assert.equal(output.querySelector('[data-export-form-control=select]').getAttribute('data-export-width'), '100%');
+  assert.equal(source.outerHTML, original);
+});
+
+test('structured training flow keeps connector row intent, centered captions and inline metric icons', async t => {
+  const {source, render} = await setup(t, await readFixture('training-flow'));
+  const original = source.outerHTML;
+  const {output} = await render({widthMode: 'custom', width: 600, fontSize: 'large'});
+  const rows = [...output.querySelectorAll('[data-export-component=row][data-d-justify=center]')];
+  const connectors = rows.filter(row => row.children.length === 1 && row.firstElementChild.localName === 'svg');
+  assert.equal(connectors.length, 4);
+  assert.ok(connectors.every(row => row.firstElementChild.hasAttribute('data-export-icon')));
+  const metric = rows.find(row => row.querySelector('h2'));
+  assert.deepEqual([...metric.children].map(node => node.localName), ['h2', 'svg', 'h2']);
+  assert.equal(output.querySelectorAll('svg[data-export-icon]').length, 5);
+  assert.equal(output.querySelectorAll('[data-d-text-align=center]').length, 2);
+  assert.equal(output.querySelector('.export-image-frame'), null);
+  assert.equal(output.querySelector('[data-export-flow]'), null);
+  assert.equal(output.querySelectorAll('[data-export-component=grid-item]').length, 3);
+  assert.equal(source.outerHTML, original);
+});
+
 test('public export pipeline captures visualization before cleanup and preserves the source iframe', async t => {
   const origin = 'https://codex-inline-visualization-test.web-sandbox.oaiusercontent.com';
   let listener;
@@ -237,4 +320,42 @@ test('select and date exports share the SVG chevron while retaining a separate c
   assert.equal(date.querySelectorAll('svg').length, 2);
   assert.ok(date.querySelector('svg[data-export-form-control=calendar]'));
   assert.equal(output.querySelector('span[data-export-form-control=arrow],button,[role=button]'), null);
+});
+
+test('mixed photo and SVG cards share container geometry through cleanup at every diagram size', async t => {
+  const {source, render} = await setup(t, await readFixture('mixed-media-grid'));
+  const before = source.outerHTML;
+  for (const diagramSize of ['small', 'standard', 'large']) {
+    const {output} = await render({diagramSize});
+    assert.equal(output.querySelectorAll('[data-export-component=grid-item]').length, 4);
+    assert.equal(output.querySelectorAll('[data-export-media]').length, 2);
+    assert.equal(output.querySelectorAll('[data-export-network-image]').length, 2);
+    assert.equal(output.querySelector('.export-image-frame,[data-export-flow],button'), null);
+    assert.ok([...output.querySelectorAll('[data-export-media]')].every(img => img.style.width === '100%'));
+    assert.equal(output.querySelectorAll('h3').length, 4);
+  }
+  const {output} = await render({showImages:false});
+  assert.equal(output.querySelector('[data-export-network-image]'), null);
+  assert.equal(output.querySelectorAll('[data-export-media]').length, 2);
+  assert.equal(source.outerHTML, before);
+});
+
+test('nested criterion checkbox labels retain their actual row owner and current state', async t => {
+  const {source,render}=await setup(t,await readFixture('opportunity-checklist'));
+  const controls=source.querySelectorAll('[role=checkbox]');
+  controls[0].setAttribute('aria-checked','true');
+  controls[1].setAttribute('aria-checked','mixed');
+  const before=source.outerHTML;
+  const {output}=await render({widthMode:'custom',width:600,fontSize:'large'});
+  const markers=[...output.querySelectorAll('[data-component-checkbox]')];
+  assert.equal(markers.length,5);
+  assert.deepEqual(markers.map(m=>m.getAttribute('data-checklist-box')),['checked','mixed','unchecked','unchecked','unchecked']);
+  for(const marker of markers){
+    assert.ok(marker.parentElement.hasAttribute('data-export-checklist-row'));
+    assert.ok(marker.parentElement.querySelector('label'));
+    assert.equal(marker.parentElement.parentElement.hasAttribute('data-export-checklist-row'),false);
+  }
+  assert.equal(output.querySelector('button,[role=checkbox]'),null);
+  assert.equal(output.querySelectorAll('label p').length,10);
+  assert.equal(source.outerHTML,before);
 });

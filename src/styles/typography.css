@@ -8,6 +8,7 @@
 .ai-card .credit{flex-shrink:1;overflow-wrap:anywhere}
 
 .ai-card svg[data-export-icon]{flex:none;vertical-align:-.125em}
+.ai-card a:has(svg[data-export-icon]){white-space:nowrap}
 .ai-card [data-export-icon-row]{display:flex;flex-direction:row;align-items:center;min-width:0}
 .ai-card [data-export-icon-row]>:not([data-export-icon]){min-width:0}
 
@@ -26,8 +27,12 @@
 .ai-card hr{margin:calc(18px * var(--spacing-scale)) 0}
 .ai-card [data-export-component=box],.ai-card [data-export-component=row]{gap:calc(8px * var(--spacing-scale))}
 .ai-card [data-export-component][data-d-has-border]{margin:calc(16px * var(--spacing-scale)) 0}
+/* A component stack already spaces its children with gap. */
+.ai-card :is([data-export-component=box],[data-export-component=row],[data-export-component=grid],[data-export-component=grid-item])>[data-export-component][data-d-has-border]{margin:0}
 .ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
+.ai-card :is([data-export-component=box],[data-export-component=row],[data-export-component=grid],[data-export-component=grid-item],[data-export-component=form],[data-export-component=list],[data-export-component=list-item]) [data-export-component=title]{margin:0}
 .ai-card [data-export-component=divider]{margin:calc(4px * var(--spacing-scale)) 0}
+.ai-card :is([data-export-component=box],[data-export-component=row],[data-export-component=grid],[data-export-component=grid-item],[data-export-component=form],[data-export-component=radio-group],[data-export-component=list],[data-export-component=list-item],[data-export-form-layout]) hr{margin-block:calc(4px * var(--spacing-scale))}
 .ai-card [data-export-shape]{gap:0}
 .ai-card .answer-content>:first-child{margin-top:0}
 
@@ -36,6 +41,7 @@
 .ai-card [data-export-flow=heading],.ai-card [data-export-flow=divider]{margin-block:calc(18px * var(--spacing-scale))!important}
 .ai-card .answer-content>[data-export-flow]:first-child{margin-top:0!important}
 .ai-card [data-export-checklist-row]{display:flex;flex-direction:row;align-items:flex-start;gap:calc(8px * var(--spacing-scale));min-width:0}
+.ai-card [data-export-checklist-row]>label{flex:1;min-width:0}
 .ai-card [data-export-checklist-row]>svg[data-component-checkbox]{width:1.1em;height:1.1em;margin-top:.3em}
 .ai-card [data-export-checklist-row][data-checklist-state=checked]{text-decoration:line-through;color:#737373}
 .ai-card[data-theme=dark] [data-export-checklist-row][data-checklist-state=checked]{color:#aaa}

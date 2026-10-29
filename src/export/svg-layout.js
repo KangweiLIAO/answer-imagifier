@@ -1,6 +1,6 @@
 const XHTML = 'http://www.w3.org/1999/xhtml';
 const TEXT_BLOCKS = 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,pre,blockquote,td,th,.prompt,.card-header,[data-export-component=text],[data-export-component=title],[data-export-component=caption]';
-const FIXED_ASSETS = 'svg,[data-math],.diagram,.native-diagram,[data-export-shape],[data-export-form-control],[data-export-image-placeholder],[data-export-network-image-frame],[data-export-network-image-container]';
+const FIXED_ASSETS = 'svg,[data-math],.diagram,.native-diagram,[data-export-shape],[data-export-form-control]:not([data-export-form-text]),[data-export-image-placeholder],[data-export-network-image-frame],[data-export-network-image-container]';
 const GREEN = [1, 254, 2];
 const MAGENTA = [253, 1, 254];
 
@@ -12,13 +12,25 @@ export function prepareSvgLayout(uri) {
   const card = svg.querySelector('foreignObject')?.firstElementChild;
   if (!card || document.querySelector('parsererror')) throw new Error('Invalid export SVG');
   const flowing = new Set([card]);
-  for (const block of card.querySelectorAll(TEXT_BLOCKS)) {
+  for (const block of card.querySelectorAll('*')) {
+    // Checklist labels and custom div/span wrappers can carry text without a
+    // paragraph. Include actual text owners so their rows grow after wrapping.
+    const hasText = [...block.childNodes].some(node => node.nodeType === 3 && /\S/.test(node.textContent));
+    if (!block.matches(TEXT_BLOCKS) && !hasText) continue;
+    if (block.matches('style,script')) continue;
     const asset = block.closest(FIXED_ASSETS);
     if (asset && card.contains(asset)) continue;
     for (let node = block; node && card.contains(node); node = node.parentElement) flowing.add(node);
   }
   for (const node of flowing) {
     node.style.setProperty('height', 'auto', 'important');
+    // Recover sizing intent throughout the text flow, including centered flex
+    // columns and nested inline groups. Computed pixel widths can wrap text at
+    // a different glyph boundary in SVG. Authored widths remain authoritative;
+    // the card and table layout retain the geometry measured by their owners.
+    if (node !== card && !node.matches('table,colgroup,col,thead,tbody,tfoot,tr,td,th')) {
+      node.style.setProperty('width', node.getAttribute('data-export-width') || 'auto', 'important');
+    }
     if (['grid', 'inline-grid'].includes(node.style.display)) {
       // Computed row tracks are frozen pixel heights too. Keep columns and
       // placements, but let text determine the height of each exported row.

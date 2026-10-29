@@ -32,6 +32,9 @@ export function preserveNetworkImages({ clone, sourceByCopy, options = {} }) {
       if (/^[\d.]+%\s+[\d.]+%$/.test(position)) image.style.objectPosition = position;
       image.removeAttribute('data-export-source-width');
     }
-    copy.querySelectorAll('[data-d-image-loading],[data-d-component="loading-block"]').forEach(node => node.remove());
+    // This component is the photo surface. Loading, action and source-link
+    // overlays are host UI; their text must not enter the cropped media flow.
+    // Titles/captions outside the surface remain owned by the card layout.
+    copy.replaceChildren(...images);
   }
 }

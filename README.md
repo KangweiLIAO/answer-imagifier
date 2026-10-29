@@ -2,7 +2,7 @@
 
 把 **ChatGPT 单独一条回答或一个 Writing block** 渲染成一张完整的 PNG / JPG 格式化长图。
 
-当前版本：**1.3.4**。更新内容见 [更新日志](changelog.md)。
+当前版本：**1.3.6**。本版修复照片与 SVG 图示混排卡片的大小、标题对齐、间距和圆角裁切，并清理照片浮层；独立图表保留三档缩放。详细内容见 [更新日志](changelog.md)。
 
 ## 安装
 
@@ -45,6 +45,14 @@ npm test
 
 测试分层、公共工具和替代依赖边界见 [测试维护说明](tests/README.md)。
 
+发布包从通过测试的 `dist/` 生成，解压后根目录直接包含 `manifest.json`：
+
+```sh
+(cd dist && zip -r ../v1.3.6.zip . -x '*.DS_Store' '__MACOSX/*')
+```
+
+版本号需同步 `package.json`、`package-lock.json` 和 `public/manifest.json`，然后重新构建。新包与 `dist/` 内容及版本核对通过后，再删除旧包；当前构建和发布包保留在本机，不提交到 Git。
+
 ## 隐私与边界
 
 - 仅保存导出偏好，不保存对话、图片或自定义文件名；详情见 [隐私政策](PRIVACY_POLICY.md)。
@@ -71,7 +79,7 @@ npm test
 - `src/layout.js` / `src/table-layout.js` / `src/image-width.js` / `src/block-spacing.js`：排版策略与测量。
 - `src/styles/`：长图基础、组件、字号／间距和控件样式；按固定顺序合并到 Shadow DOM。
 - `src/panel.css`：面板样式。
-- `samples/intelligent-ui/`：真实回答样本的采集模板、参考截图与导出对照。
+- `samples/intelligent-ui/`：本机可选的真实样本、参考截图与导出对照，已由 Git 忽略；构建与测试不依赖此目录。
 - `tests/fixtures/`：自动化测试使用的精简 HTML。
 - `public/manifest.json`：Chrome Manifest V3 配置；ChatGPT 页面入口和 sandbox iframe 截图脚本分别匹配指定域名，API 权限为 storage，另需 `https://images.openai.com/*` 的网络图片访问权限；后台只接受 ChatGPT 主页面的指定图片路径请求。
 
@@ -81,8 +89,8 @@ npm test
 
 ## 后续事项
 
-- Intelligent UI 兼容性样本的采集模板和操作说明见 [样本库](samples/intelligent-ui/README.md)。
+- 当前工作区已通过 127 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。
+
+- 新兼容性案例保留来源 DOM、当前交互状态、原页面参考图、导出设置和实际导出图；长期样本可放在本机 `samples/intelligent-ui/`，自动化回归结构放在 `tests/fixtures/`。没有完整参考图或真实页面复验时，明确记录 pending／partial／fail。
 
 - 部分混合内容的本地深色 PNG 样本中，内嵌 SVG 架构图出现空白；单独图表样本导出正常，原因尚未定位，需进一步验证。小图标与提示卡片修复已单独验证。
-
-- 已实现组件保留、自动／自定义长图宽度及自定义字号；仍需在真实 ChatGPT 对话页面重新加载扩展后验证。

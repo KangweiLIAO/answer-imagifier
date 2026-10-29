@@ -15,3 +15,6 @@ coverage/
 # Local browser verification artifacts
 .playwright-cli/
 output/playwright/
+
+# Local sample cases
+/samples/

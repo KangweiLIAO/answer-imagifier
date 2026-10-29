@@ -33,8 +33,10 @@
 .ai-card table[data-d-dividers] tr:last-child :is(th,td){border-bottom:0}
 .ai-card [data-export-component=table-cell][data-d-align=end]{text-align:right}
 .ai-card[data-theme=dark] table[data-d-dividers] :is(th,td){border-bottom-color:#494949}
-.ai-card [data-export-form-control=segmented]{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
-.ai-card [data-export-form-control=segment]{padding:6px 12px;border:1px solid #ddd;border-radius:999px;color:#737373;line-height:1.4;overflow-wrap:anywhere}
+.ai-card [data-export-form-control=segmented]{display:inline-flex;align-self:flex-start;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%}
+.ai-card [data-export-form-control=segment]{display:flex;align-items:center;justify-content:center;min-width:0;max-width:100%;padding:6px 12px;border:1px solid #ddd;border-radius:999px;color:#737373;line-height:1.4;overflow-wrap:anywhere}
+.ai-card [data-export-form-control=segmented][data-export-block]{align-self:stretch;width:100%;flex-wrap:nowrap}
+.ai-card [data-export-form-control=segmented][data-export-block]>[data-export-form-control=segment]{flex:1 1 0%;text-align:center}
 .ai-card [data-export-variant=ghost]>[data-export-form-control=segment]{border-color:transparent}
 .ai-card [data-export-form-control=segment][data-export-selected=true]{color:#242424;background:#eee;border-color:#ddd;font-weight:500}
 .ai-card[data-theme=dark] [data-export-form-control=segment]{color:#aaa;border-color:#494949}

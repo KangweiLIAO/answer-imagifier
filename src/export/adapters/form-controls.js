@@ -2,6 +2,8 @@ import { choiceMarker } from '../../shared/choice-marker.js';
 
 const NON_CHECKBOX = 'input:not([type=checkbox]):not([type=hidden]),select,textarea,[role=radio],[role=radiogroup],[role=combobox],[role=slider],[role=textbox]';
 const CONTROLS = `[data-d-component=segmented-control],${NON_CHECKBOX},input[type=checkbox],[role=checkbox],[data-d-component=select],[data-d-component=date-picker],[data-d-component=slider]`;
+const TEXT_FIELDS = new Set(['input', 'select', 'date', 'textarea']);
+const FLOW_CONTROLS = new Set([...TEXT_FIELDS, 'segmented', 'segment']);
 
 function formContext(source) {
   const form = source.closest('form,[data-export-form]');
@@ -14,6 +16,10 @@ function formContext(source) {
 function node(document, tag, kind, text) {
   const result = document.createElement(tag);
   result.setAttribute('data-export-form-control', kind);
+  // Text surfaces may grow after wrapping; slider geometry and choice markers
+  // keep their measured dimensions. Field width remains an explicit contract.
+  if (FLOW_CONTROLS.has(kind)) result.setAttribute('data-export-form-text', '');
+  if (TEXT_FIELDS.has(kind)) result.setAttribute('data-export-width', '100%');
   if (text !== undefined) result.textContent = text;
   return result;
 }
@@ -34,7 +40,12 @@ export function preserveFormControls(clone, sourceByCopy, readStyle = source => 
     if (!source || source.matches('input[type=hidden],input[type=submit],input[type=reset],input[type=button],[role=radiogroup],[aria-hidden="true"]')) continue;
     if (source.matches('[data-d-component=segmented-control]')) {
       const group = node(document, 'div', 'segmented');
-      group.setAttribute('data-export-variant', source.querySelector('[data-variant]')?.getAttribute('data-variant') || 'outline');
+      const control = source.querySelector('[role=radiogroup]') || source;
+      group.setAttribute('data-export-variant', control.getAttribute('data-variant') || source.querySelector('[data-variant]')?.getAttribute('data-variant') || 'outline');
+      if ([source, control].some(element => element.matches('[data-block],[data-d-block]'))) {
+        group.setAttribute('data-export-block', '');
+        group.setAttribute('data-export-width', '100%');
+      }
       for (const option of source.querySelectorAll('[role=radio]')) {
         const label = option.textContent.trim() || option.getAttribute('aria-label') || '';
         const item = node(document, 'span', 'segment', label);
@@ -140,7 +151,8 @@ export function preserveFormControls(clone, sourceByCopy, readStyle = source => 
       copy.style.flexDirection = style.getPropertyValue('flex-direction') || 'row';
       copy.style.justifyContent = style.getPropertyValue('justify-content') || 'flex-start';
       copy.style.alignItems = style.getPropertyValue('align-items') || 'center';
-      copy.style.gap = `calc(${parseFloat(style.getPropertyValue('gap')) || 8}px * var(--spacing-scale, 1))`;
+      const gap = parseFloat(style.getPropertyValue('gap'));
+      copy.style.gap = `calc(${Number.isFinite(gap) ? gap : 8}px * var(--spacing-scale, 1))`;
       copy.style.flexWrap = copy.style.flexDirection.startsWith('column') ? 'nowrap' : 'wrap';
     }
   }

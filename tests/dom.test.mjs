@@ -82,6 +82,20 @@ test('content script reuses buttons, handles replaced answers and streaming comp
   document.querySelector('#answer').setAttribute('data-is-streaming', 'true');
   rescan();
   assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
+  document.querySelector('#answer').removeAttribute('data-is-streaming');
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 1);
+  document.querySelector('#answer').innerHTML = '<div data-testid="generated-image-gallery">Image created<button>Edit</button><img></div>';
+  rescan();
+  assert.equal(document.querySelectorAll('[data-answer-imagifier]').length, 0);
+});
+
+test('hidden speaker headings are omitted and do not make an empty answer exportable', t => {
+  const { document } = setup(t, fixture);
+  const answer = document.querySelector('#answer');
+  assert.ok(excludedContent(answer).has(answer.querySelector('h4')));
+  answer.innerHTML = '<h4 class="sr-only">ChatGPT said:</h4>';
+  assert.equal(getAnswers().length, 0);
 });
 
 test('Writing entries target individual blocks, survive toolbar replacement and leave native actions intact', async t => {
@@ -131,12 +145,18 @@ test('Writing entries target individual blocks, survive toolbar replacement and 
   assert.equal(document.querySelectorAll('[data-answer-imagifier=writing-block]').length, 1);
 });
 
-test('hidden speaker headings are omitted and do not make an empty answer exportable', t => {
+test('generated-image UI text does not create an export target, but mixed prose does', t => {
   const { document } = setup(t, fixture);
   const answer = document.querySelector('#answer');
-  assert.ok(excludedContent(answer).has(answer.querySelector('h4')));
-  answer.innerHTML = '<h4 class="sr-only">ChatGPT said:</h4>';
+  answer.innerHTML = `<h4 class="sr-only">ChatGPT said:</h4>
+    <div data-testid="generated-image-gallery"><span>Image created</span>
+      <button data-testid="generated-image-preview"><img alt="Generated image 1"></button>
+      <div>Edit image</div></div>`;
   assert.equal(getAnswers().length, 0);
+  answer.insertAdjacentHTML('beforeend', '<p>Here is the explanation.</p>');
+  assert.equal(getAnswers().length, 1);
+  answer.innerHTML = '<p>Normal answer</p><div data-d-component="image"><img src="thumbnail.png"></div>';
+  assert.equal(getAnswers().length, 1);
 });
 
 test('new answers wait for native actions even when old streaming markers are absent', t => {

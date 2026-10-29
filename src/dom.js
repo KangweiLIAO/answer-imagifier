@@ -3,7 +3,13 @@ import { ANSWER_SELECTOR, USER_SELECTOR, TURN_SELECTOR, STREAMING_SELECTOR } fro
 export { ANSWER_SELECTOR, TURN_SELECTOR, STREAMING_SELECTOR } from './chatgpt/selectors.js';
 export function isStreaming() { return Boolean(document.querySelector(STREAMING_SELECTOR)); }
 export function isExportableAnswer(answer) {
-  return Boolean(messageText(answer)) && !answer.closest('[role="dialog"],dialog,[role="menu"]');
+  if (answer.closest('[role="dialog"],dialog,[role="menu"]')) return false;
+  const clone = answer.cloneNode(true);
+  // Generated-image status, captions and editing controls are not exportable
+  // prose. Keep text outside the gallery, including mixed text/image answers.
+  clone.querySelectorAll('[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation],.sr-only,.visually-hidden,[role="tooltip"]').forEach(el => el.remove());
+  clone.querySelectorAll('h4.sr-only,button,[data-answer-imagifier]').forEach(el => el.remove());
+  return Boolean(clone.textContent.trim());
 }
 export function getAnswers() {
   const answers = [...document.querySelectorAll(ANSWER_SELECTOR)].filter(isExportableAnswer);

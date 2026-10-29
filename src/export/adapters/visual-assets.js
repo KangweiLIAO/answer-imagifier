@@ -37,6 +37,13 @@ export function preserveVisualAssets(clone, sourceByCopy, readStyle = source => 
       if (['flex', 'inline-flex'].includes(layout.getPropertyValue('display')) && layout.getPropertyValue('flex-direction') === 'row') {
         parent.setAttribute('data-export-icon-row', '');
         parent.style.gap = layout.getPropertyValue('gap') || '8px';
+        // Keep the host's main- and cross-axis alignment even when this row
+        // has no structured-component metadata. Icon presence is not a reason
+        // to force every row to the same alignment.
+        for (const property of ['justify-content', 'align-items']) {
+          const value = layout.getPropertyValue(property);
+          if (value && !value.includes('var(')) parent.style.setProperty(property, value);
+        }
         break;
       }
     }

@@ -8,6 +8,9 @@ const marker = 'data-answer-imagifier';
 const entryStyle = document.createElement('style');
 entryStyle.textContent = entryCSS + `
 body:has(${STREAMING_SELECTOR}) [${marker}]{display:none!important}
+/* Adobe offsets this image action to reserve room for extra controls. Keep it
+   in the native action layout, which already accounts for our button width. */
+#chatgpt-chatview-adobe-express-entry-point{left:auto!important}
 `;
 document.head.append(entryStyle);
 let hintId = 0;

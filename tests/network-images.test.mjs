@@ -6,7 +6,7 @@ import { loadModule } from './helpers/module.mjs';
 import { excludedContent } from '../src/content-filter.js';
 
 test('network photo adapter preserves crop and frame dimensions but omits generated images and site icons', async t => {
-  const { document, globals } = createBrowser(t, '<main><div data-d-component="box" style="width:100%;max-width:132px;aspect-ratio:4 / 5"><div data-d-component="image" style="width:100%;aspect-ratio:4 / 5"><img src="https://images.openai.com/static-rsc-4/photo" style="object-position:17.8% 50%"><div data-d-image-loading>Loading</div></div></div><div data-testid="generated-image-preview"><div data-d-component="image"><img id="generated" src="https://images.openai.com/static-rsc-4/generated"></div></div><img id="favicon" src="https://example.com/favicon.png"></main>');
+  const { document, globals } = createBrowser(t, '<main><div data-d-component="box" style="width:100%;max-width:132px;aspect-ratio:4 / 5"><div data-d-component="image" style="width:100%;aspect-ratio:4 / 5"><img src="https://images.openai.com/static-rsc-4/photo" style="object-position:17.8% 50%"><div data-d-image-loading>Loading</div><div><a href="https://example.com/source">Source overlay</a></div><span>Action overlay</span></div></div><p id="caption">Visible card caption</p><div data-testid="generated-image-preview"><div data-d-component="image"><img id="generated" src="https://images.openai.com/static-rsc-4/generated"></div></div><img id="favicon" src="https://example.com/favicon.png"></main>');
   const source = document.querySelector('main'); const before = source.outerHTML;
   const omitted = excludedContent(source);
   assert.equal(omitted.has(source.querySelector('img')), false);
@@ -21,6 +21,9 @@ test('network photo adapter preserves crop and frame dimensions but omits genera
   assert.equal(image.parentElement.parentElement.style.maxWidth, '132px');
   assert.equal(image.parentElement.style.aspectRatio, '4 / 5');
   assert.equal(context.clone.querySelector('[data-d-image-loading]'), null);
+  assert.equal(image.parentElement.children.length, 1);
+  assert.doesNotMatch(image.parentElement.textContent, /overlay/);
+  assert.equal(context.clone.querySelector('#caption').textContent, 'Visible card caption');
   assert.equal(source.outerHTML, before);
 });
 

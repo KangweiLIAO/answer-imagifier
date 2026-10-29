@@ -5,8 +5,23 @@
 /* Structured answer cards: explicit layout independent of host CSS. */
 .ai-card [data-export-component=box],.ai-card [data-export-component=row]{display:flex;flex-direction:column;min-width:0;gap:8px}
 .ai-card [data-export-component=row],.ai-card [data-export-component][data-d-direction=row]{flex-direction:row}
+.ai-card [data-export-component=box][data-d-inline],.ai-card [data-export-component=row][data-d-inline]{display:inline-flex;vertical-align:baseline}
 .ai-card [data-export-component][data-d-align=center]{align-items:center}
+.ai-card [data-export-component][data-d-align=end]{align-items:flex-end}
+.ai-card [data-export-component][data-d-align=stretch]{align-items:stretch}
+.ai-card [data-export-component][data-d-align=baseline]{align-items:baseline}
+.ai-card [data-export-component][data-d-justify=start]{justify-content:flex-start}
+.ai-card [data-export-component][data-d-justify=center]{justify-content:center}
+.ai-card [data-export-component][data-d-justify=end]{justify-content:flex-end}
 .ai-card [data-export-component][data-d-justify=between]{justify-content:space-between}
+.ai-card [data-export-component][data-d-justify=around]{justify-content:space-around}
+.ai-card [data-export-component][data-d-justify=evenly]{justify-content:space-evenly}
+.ai-card [data-export-component][data-d-text-align=left]{text-align:left}
+.ai-card [data-export-component][data-d-text-align=center]{text-align:center}
+.ai-card [data-export-component][data-d-text-align=right]{text-align:right}
+.ai-card [data-export-component][data-d-text-align=start]{text-align:start}
+.ai-card [data-export-component][data-d-text-align=end]{text-align:end}
+.ai-card [data-export-component][data-d-text-align=justify]{text-align:justify}
 .ai-card [data-export-component][data-d-has-border]{border:1px solid #dedede;border-radius:12px;padding:12px;margin:16px 0}
 .ai-card[data-theme=dark] [data-export-component][data-d-has-border]{border-color:#494949}
 .ai-card p[data-export-component],.ai-card [data-export-component=title]:not(h1,h2,h3,h4,h5,h6){margin:0}
@@ -16,6 +31,10 @@
 .ai-card [data-export-component][data-d-weight=semibold],.ai-card [data-export-component][data-d-default-strong]{font-weight:600}
 .ai-card [data-export-component][data-d-weight=medium]{font-weight:500}
 .ai-card [data-export-component=text][data-d-size=sm]{font-size:.875em}
+.ai-card [data-export-component=text][data-d-size=xs]{font-size:.75em}
+.ai-card [data-export-component=text][data-d-size="2xs"]{font-size:.6875em}
+.ai-card [data-export-component=text][data-d-size="3xs"]{font-size:.625em}
+.ai-card [data-export-component=text][data-d-inline][data-export-width]{display:inline-block;max-width:100%}
 .ai-card [data-export-component][data-d-tabular-nums=true]{font-variant-numeric:tabular-nums}
 .ai-card [data-export-component=divider]{margin:4px 0;width:100%;flex:none}
 .ai-card [data-export-shape]{display:block;gap:0;background:#eee;overflow:hidden;flex-shrink:0}
@@ -26,6 +45,7 @@
 .ai-card [data-export-answer-option][data-export-selected=true]{outline:2px solid currentColor;outline-offset:-2px}
 .ai-card svg[data-component-checkbox]{position:static;display:block;width:20px;height:20px;max-width:none;flex:none}
 .ai-card img[data-export-component=svg]{margin:0;background:#fff}
+.ai-card [data-export-media]{display:block;max-width:100%;height:auto;margin:0;flex:none}
 
 .ai-card .export-image-frame{max-width:100%;min-width:0;flex-shrink:1;margin:14px auto}
 .ai-card .export-image-frame>img,.ai-card .export-image-frame>svg{display:block;margin:0}

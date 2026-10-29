@@ -34,3 +34,15 @@ test('unowned root controls are left for the cleanup stage', () => {
   assert.equal(clone.querySelectorAll('svg,[data-checklist-item]').length, 0);
   assert.equal(clone.querySelectorAll('input').length, 1);
 });
+
+test('associated labels own nested checkbox rows instead of an outer structured row', () => {
+  for (const id of ['criterion', 'id:with[punctuation]']) {
+    const html=`<div data-d-component="row"><div><button role="checkbox" id="${id}" aria-checked="mixed"></button><label for="${id}"><span>Long title</span><p>Description</p></label></div></div>`;
+    const clone=convert(html);
+    const marker=clone.querySelector('svg');
+    assert.equal(marker.parentElement.hasAttribute('data-export-checklist-row'),true);
+    assert.equal(marker.parentElement.parentElement.hasAttribute('data-export-checklist-row'),false);
+    assert.equal(marker.getAttribute('data-checklist-box'),'mixed');
+    assert.equal(clone.querySelectorAll('svg').length,1);
+  }
+});

@@ -1,0 +1,74 @@
+<!-- User-provided structured flow, 2026-10-20: four centered icon-only connector rows, three grid branches and an inline metric arrow. -->
+<div data-d-component="box" data-d-direction="col" data-d-has-border="" style="border: 1px solid var(--color-border); border-radius: var(--dil-radius-lg); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 3); padding-block: calc(var(--spacing, 0.25rem) * 3); padding-inline: calc(var(--spacing, 0.25rem) * 3); gap: calc(var(--spacing, 0.25rem) * 2);">
+<div data-d-align="center" data-d-component="box" data-d-direction="col" style="--smoothing-background-color: var(--color-surface-secondary); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 3); padding-block: calc(var(--spacing, 0.25rem) * 3); padding-inline: calc(var(--spacing, 0.25rem) * 3); background-color: var(--color-surface-secondary); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text">
+<span data-d-text-flow="" data-d-component="text" data-d-default-strong="" data-d-inline="">Pretrained FlowFormer</span>
+</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="xs" style="color: var(--color-text-secondary);">加载已经训练好的模型权重</p>
+</div>
+<div data-d-auto-spacing="" data-d-component="row" data-d-direction="row" data-d-justify="center">
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" data-d-component="icon" style="color: var(--color-text-tertiary); font-size: 16px;">
+<path fill-rule="evenodd" d="M12.707 18.707a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L11 15.586V6a1 1 0 1 1 2 0v9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5Z" clip-rule="evenodd" />
+</svg>
+</div>
+<div data-d-align="center" data-d-component="box" data-d-direction="col" data-d-has-border="" style="border: 1px solid var(--color-border); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 3); padding-block: calc(var(--spacing, 0.25rem) * 3); padding-inline: calc(var(--spacing, 0.25rem) * 3); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text">
+<span data-d-text-flow="" data-d-component="text" data-d-default-strong="" data-d-inline="">Dataset Preparation</span>
+</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="xs" data-d-text-align="center" style="color: var(--color-text-secondary);">Kubric 生成 RGB Frame Pairs + Ground Truth Optical Flow</p>
+</div>
+<div data-d-auto-spacing="" data-d-component="row" data-d-direction="row" data-d-justify="center">
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" data-d-component="icon" style="color: var(--color-text-tertiary); font-size: 16px;">
+<path fill-rule="evenodd" d="M12.707 18.707a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L11 15.586V6a1 1 0 1 1 2 0v9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5Z" clip-rule="evenodd" />
+</svg>
+</div>
+<div data-d-component="grid" style="gap: calc(var(--spacing, 0.25rem) * 2); grid-template-columns: repeat(3, minmax(0px, 1fr));">
+<div data-d-component="grid-item" data-d-direction="col" data-d-variant="transparent" style="gap: calc(var(--spacing, 0.25rem) * 0); --grid-item-column: auto; --grid-item-row: auto;">
+<div data-d-align="center" data-d-component="box" data-d-direction="col" style="--smoothing-background-color: var(--color-surface-secondary); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 2); padding-block: calc(var(--spacing, 0.25rem) * 2); padding-inline: calc(var(--spacing, 0.25rem) * 2); background-color: var(--color-surface-secondary); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text" data-d-size="sm" data-d-weight="medium">Train</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="2xs" style="color: var(--color-text-secondary);">更新权重</p>
+</div>
+</div>
+<div data-d-component="grid-item" data-d-direction="col" data-d-variant="transparent" style="gap: calc(var(--spacing, 0.25rem) * 0); --grid-item-column: auto; --grid-item-row: auto;">
+<div data-d-align="center" data-d-component="box" data-d-direction="col" style="--smoothing-background-color: var(--color-surface-secondary); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 2); padding-block: calc(var(--spacing, 0.25rem) * 2); padding-inline: calc(var(--spacing, 0.25rem) * 2); background-color: var(--color-surface-secondary); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text" data-d-size="sm" data-d-weight="medium">Validation</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="2xs" style="color: var(--color-text-secondary);">Early Stopping</p>
+</div>
+</div>
+<div data-d-component="grid-item" data-d-direction="col" data-d-variant="transparent" style="gap: calc(var(--spacing, 0.25rem) * 0); --grid-item-column: auto; --grid-item-row: auto;">
+<div data-d-align="center" data-d-component="box" data-d-direction="col" style="--smoothing-background-color: var(--color-surface-secondary); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 2); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 2); padding-block: calc(var(--spacing, 0.25rem) * 2); padding-inline: calc(var(--spacing, 0.25rem) * 2); background-color: var(--color-surface-secondary); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text" data-d-size="sm" data-d-weight="medium">Test</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="2xs" style="color: var(--color-text-secondary);">最终评估</p>
+</div>
+</div>
+</div>
+<div data-d-auto-spacing="" data-d-component="row" data-d-direction="row" data-d-justify="center">
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" data-d-component="icon" style="color: var(--color-text-tertiary); font-size: 16px;">
+<path fill-rule="evenodd" d="M12.707 18.707a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L11 15.586V6a1 1 0 1 1 2 0v9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5Z" clip-rule="evenodd" />
+</svg>
+</div>
+<div data-d-align="center" data-d-component="box" data-d-direction="col" data-d-has-border="" style="border: 1px solid var(--color-border); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 3); padding-block: calc(var(--spacing, 0.25rem) * 3); padding-inline: calc(var(--spacing, 0.25rem) * 3); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text">
+<span data-d-text-flow="" data-d-component="text" data-d-default-strong="" data-d-inline="">Fine-tuning</span>
+</p>
+<p data-d-text-flow="" data-d-component="text" data-d-size="xs" data-d-text-align="center" style="color: var(--color-text-secondary);">Forward → Loss → Backpropagation → Adam Update</p>
+</div>
+<div data-d-auto-spacing="" data-d-component="row" data-d-direction="row" data-d-justify="center">
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" data-d-component="icon" style="color: var(--color-text-tertiary); font-size: 16px;">
+<path fill-rule="evenodd" d="M12.707 18.707a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L11 15.586V6a1 1 0 1 1 2 0v9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5Z" clip-rule="evenodd" />
+</svg>
+</div>
+<div data-d-align="center" data-d-component="box" data-d-direction="col" data-d-has-border="" style="--smoothing-background-color: rgba(32,130,96,0.07); border: 1px solid rgba(32, 130, 96, 0.3); border-radius: var(--dil-radius-md); --w-box-gutter-block-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-block-start: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-end: calc(var(--spacing, 0.25rem) * 3); --w-box-gutter-inline-start: calc(var(--spacing, 0.25rem) * 3); padding-block: calc(var(--spacing, 0.25rem) * 3); padding-inline: calc(var(--spacing, 0.25rem) * 3); background-color: rgba(32, 130, 96, 0.07); gap: calc(var(--spacing, 0.25rem) * 1);">
+<p data-d-text-flow="" data-d-component="text">
+<span data-d-text-flow="" data-d-component="text" data-d-default-strong="" data-d-inline="">Evaluation — Average EPE</span>
+</p>
+<div data-d-align="center" data-d-component="row" data-d-direction="row" data-d-justify="center" style="gap: calc(var(--spacing, 0.25rem) * 2);">
+<h2 data-d-text-flow="" data-d-component="title" data-d-size="lg" data-d-weight="semibold" style="color: var(--color-text-secondary);">0.26</h2>
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" data-d-component="icon" style="color: var(--color-text-secondary); font-size: 16px;">
+<path fill-rule="evenodd" d="M18.707 12.707a1 1 0 0 0 0-1.414l-5-5a1 1 0 1 0-1.414 1.414L15.586 11H6a1 1 0 1 0 0 2h9.586l-3.293 3.293a1 1 0 0 0 1.414 1.414l5-5Z" clip-rule="evenodd" />
+</svg>
+<h2 data-d-text-flow="" data-d-component="title" data-d-size="lg" data-d-weight="semibold" style="color: var(--color-text-success);">0.14</h2>
+</div>
+<p data-d-text-flow="" data-d-component="text" data-d-size="xs" style="color: var(--color-text-secondary);">Full Core Dataset Fine-tuning</p>
+</div>
+</div>

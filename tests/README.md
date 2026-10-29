@@ -24,7 +24,9 @@ node --test tests/form-controls.test.mjs tests/export-pipeline.test.mjs
 | 导出集成 | `export-pipeline` | 调用真实 `createCard()`，经过快照、适配、清理、组装和布局 |
 | 界面行为 | `panel-settings`、`dom` | 加载真实面板／入口模块，操作 DOM，验证手动渲染、过期结果和回答识别 |
 | 构建边界 | `build`、`csp` | 扩展匹配域名、权限及 CSP 兼容性 |
-| 浏览器视觉验证 | `samples/intelligent-ui/` 与实际 PNG | 字体、图表、真实排版、主题和栅格化结果 |
+| 浏览器视觉验证 | 本机可选 `samples/intelligent-ui/` 与实际 PNG | 字体、图表、真实排版、主题和栅格化结果 |
+
+本机样本目录已由 Git 忽略，自动化测试仅依赖已纳入版本管理的 `tests/fixtures/`。浏览器临时产物使用 `output/playwright/` 或系统临时目录，验证结论写入文档后清理，不将临时路径作为长期证据链接。
 
 不能用测试数量或 DOM 断言代替实际图片验收。新增组件时先确定需要保护的行为，再选择对应层次；无需在每层重复同一组断言。
 
@@ -65,6 +67,10 @@ LinkeDOM 没有真实布局引擎；测试里的 Canvas 文字测量及内联样
 - `export-pipeline.test.mjs` 使用 `fixtures/assessment.html` 检查真实测验选项经过完整清理后仍保留答案、错误图标与部分进度；同时检查实时选择、纯操作按钮移除及源 DOM 不被修改。
 - select 和日期选择器的共享箭头用完整导出流程验证：SVG 相同、无旧文字箭头、日期仍有独立日历图标。新增下拉类控件时，将其加入同一组检查。
 - `components.test.mjs` 覆盖 0%、33.3333%、100% 宽度和变量引用的彩色填充。比例断言不能代替轨道与填充的可见性检查。
+- `fixtures/expo-schedule.html` 保留用户 DOM 的六张日程卡片及 22 个显式 100px 时间栏；组件／完整导出测试检查宽度、文字、源 DOM 保留，SVG 测试检查状态标签自然宽度及时间列几何。实际 PNG 另检查 `xs` 字号、时间和状态标签无意外折行、嵌套卡片间距，以及浅色／深色窄宽度下的边框与完整末尾。
+- `fixtures/interview-workspace.html` 保留居中统计标签、组件标题及嵌套 `max-content` 文件链接；省略无关功能表格，浏览器验证仍使用用户完整 DOM。集成测试检查分组、图标、标题间距归属及源 DOM 不变；SVG 测试使用不同文案／嵌套结构、百分比／em 来验证尺寸意图，表格几何保持单独保护。不能只覆盖 row 的直接文本；需核对居中的 column／grid 及多层 span 中的实际 PNG，并同步复查日程、清单和比例条。
+- `fixtures/interview-review.html` 保留完整 Review Widget、7 条分隔线及整行分段切换。完整流程检查分隔线不套用正文间距、当前选中状态、全部 6 条笔记、单一下拉箭头及源 DOM 不变。`block-spacing` 另覆盖多种组件布局／普通包装层和独立正文 hr 的边界；`form-controls` 覆盖 1／2／3／5 个选项、两种 block 属性、长文案与零 gap；`svg-layout` 检查文本控件可撑高、字段整行宽度保留、图标及滑块几何不变。浏览器还需检查等宽分段、非整行分段、600px／24px 长标签和字段值的完整显示，并复查评分卡、问卷及此前统计卡／日程／清单。
+- `fixtures/training-flow.html` 保留 4 个居中连接图标行、3 个网格分支及指标内联箭头。完整导出检查连接行语义、图标不被当成整图缩放和源 DOM 不变；组件／视觉适配器检查主轴分布、交叉轴／self 对齐、文字对齐、无组件标记的图标行及实际样式覆盖语义属性。文字重排测试检查对齐仍保留。浏览器验证同时测量暂存 DOM、检查 SVG 样式并核对实际浅／深色窄版 PNG，不能用“整张 SVG／图片框已居中”代替 DOM 连接行的居中验证。
 - 修改共享 CSS 后检查实际 PNG：浅色／深色、Automatic／600px，以及小字号／标准字号下的箭头尺寸、垂直居中和日历位置。离线 DOM 配合测试样式的 PNG 验证不能代表已安装扩展在真实 ChatGPT 页面中的验收。
 
 - `network-images.test.mjs` 验证后台发送方／URL 校验、匿名请求、MIME 与流式大小限制、图片内联及失败布局。`network-image-cards.html` 来自用户提供的三种卡片 DOM，图片地址替换为固定 fixture URL；离线测试不证明实际网络图片已成功获取，真实 PNG 验收需要 images.openai.com 权限生效；历史真实 PNG 已验证浅色 Automatic 与深色 600px；临时产物已于 2026-10-13 清理。
@@ -76,3 +82,7 @@ LinkeDOM 没有真实布局引擎；测试里的 Canvas 文字测量及内联样
 - `writing-block.html` 保留用户提供的完整 Writing block 样本。导出集成测试验证编辑后的正文优先于缓存 Markdown、全部语义结构与来源 DOM 保留、编辑 UI 清理，以及普通 textbox／textarea 回归。
 
 - `svg-layout.test.mjs` 验证序列化副本中的文字容器／网格行重排、图形及控件尺寸保留、双色结束标记在缩放／亚像素边界下的识别、探测扩大重试及最终高度；结束位置无法确认时必须报错。需配合实际 PNG 检查换行、末段、边框和测量标记未进入输出，DOM 测试不能代替 SVG image 排版验收。
+
+- `fixtures/mixed-media-grid.html` 保留照片与 SVG 图示的四卡混排结构。组件／集成测试检查媒体容器归属、嵌套中性包装、作者宽度和比例、含文字裁切布局与独立图表的边界、三档图表大小、图片开关、控件清理和源 DOM 不变。PNG 需覆盖单／双／三列、长标题、浅深色和窄宽度，检查同排媒体／标题基线、圆角和裁切；照片表面浮层应移除，外部说明应保留。
+
+- `opportunity-checklist.html` 覆盖 row 内再包一层控件／关联标签容器的五项清单。验证实际布局归属、状态、标签内容、去重及源 DOM 不变；浏览器检查浅／深色窄版长文字，标记应位于标题第一行左侧。

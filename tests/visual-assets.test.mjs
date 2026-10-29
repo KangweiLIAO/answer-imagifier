@@ -31,3 +31,19 @@ test('link and callout icons remain inline while explicit and text-bearing chart
   assert.equal(clone.querySelector('a svg').parentElement.localName, 'a');
   assert.equal(clone.querySelector('[data-export-icon-row] svg').style.width, '1.125em');
 });
+
+test('anonymous icon rows retain main and cross axis alignment instead of forcing one layout', () => {
+  for (const justify of ['flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly']) {
+    const {document} = createDOM(`<main><div style="display:flex;flex-direction:row;justify-content:${justify};align-items:baseline;gap:0px"><svg data-d-component="icon" viewBox="0 0 24 24"><path/></svg><span>Unrelated label</span></div></main>`);
+    const source = document.querySelector('main');
+    const before = source.outerHTML;
+    const {clone, map} = cloneForAdapter(source, {stripStyles: true, stripClasses: true});
+    preserveVisualAssets(clone, map, element => ({getPropertyValue: name => name === 'font-size' ? '16px' : element.style.getPropertyValue(name) || ''}));
+    const row = clone.querySelector('[data-export-icon-row]');
+    assert.equal(row.style.justifyContent, justify);
+    assert.equal(row.style.alignItems, 'baseline');
+    assert.equal(row.style.gap, '0px');
+    assert.equal(clone.querySelector('svg').style.flex, 'none');
+    assert.equal(source.outerHTML, before);
+  }
+});

@@ -76,3 +76,42 @@ test('scorecard segmented ratings preserve all labels and the current selection'
     assert.deepEqual([...group.children].map(item => item.textContent), ['0 · Missing', '1 · Assisted', '2 · Independent']);
   }
 });
+
+test('segmented controls preserve block intent and arbitrary option counts without depending on label text', () => {
+  for (const count of [1, 2, 3, 5]) {
+    for (const flag of ['', 'data-block', 'data-d-block']) {
+      const labels = Array.from({length: count}, (_, i) => `选项 ${i + 1} · A longer independent label`);
+      const {document} = createDOM(`<main><div data-d-component="segmented-control"><div role="radiogroup" ${flag} data-variant="ghost">${labels.map((label, i) => `<button role="radio" aria-checked="${i === count - 1}">${label}</button>`).join('')}</div></div></main>`);
+      const source = document.querySelector('main');
+      const original = source.outerHTML;
+      const clone = convert(source);
+      const group = clone.querySelector('[data-export-form-control=segmented]');
+      assert.equal(group.hasAttribute('data-export-block'), !!flag);
+      assert.equal(group.getAttribute('data-export-width'), flag ? '100%' : null);
+      assert.equal(group.getAttribute('data-export-variant'), 'ghost');
+      assert.ok(group.hasAttribute('data-export-form-text'));
+      assert.deepEqual([...group.children].map(item => item.textContent), labels);
+      assert.ok([...group.children].every(item => item.hasAttribute('data-export-form-text')));
+      assert.equal(group.querySelector('[data-export-selected=true]').textContent, labels.at(-1));
+      assert.equal(source.outerHTML, original);
+    }
+  }
+  const {document} = createDOM('<main><div data-d-component="segmented-control" data-block><div role="radiogroup"><button role="radio">Wrapper flag</button></div></div></main>');
+  assert.ok(convert(document.querySelector('main')).querySelector('[data-export-block]'));
+});
+
+test('text fields expose fluid sizing while sliders and choice geometry stay fixed; zero form gap is retained', () => {
+  const {document} = createDOM('<main><form><div style="display:flex;flex-direction:column;gap:0px"><input type="text" placeholder="Label"><select><option>Current</option></select><input type="date"><textarea>Long value</textarea><input type="range"><label><input type="radio">Choice</label></div></form></main>');
+  const source = document.querySelector('main');
+  const {clone, map} = cloneForAdapter(source, {stripStyles: true});
+  preserveFormControls(clone, map, element => ({getPropertyValue: name => element.style.getPropertyValue(name) || ''}));
+  for (const kind of ['input', 'select', 'date', 'textarea']) {
+    const field = clone.querySelector(`[data-export-form-control=${kind}]`);
+    assert.ok(field.hasAttribute('data-export-form-text'), kind);
+    assert.equal(field.getAttribute('data-export-width'), '100%', kind);
+  }
+  for (const kind of ['slider', 'slider-track', 'slider-thumb', 'radio', 'arrow', 'calendar']) {
+    assert.equal(clone.querySelector(`[data-export-form-control=${kind}]`).hasAttribute('data-export-form-text'), false, kind);
+  }
+  assert.equal(clone.querySelector('form>div').style.gap, 'calc(0px * var(--spacing-scale, 1))');
+});
