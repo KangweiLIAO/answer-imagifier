@@ -1,5 +1,9 @@
 # 导出架构
 
+> English: pipeline notes for turning one ChatGPT answer into a static image. The sections below are in Chinese. The preview panel calls `createCard()` and `rasterize()` only.
+
+[English README](../README.md) · [简体中文 README](../README.zh-CN.md)
+
 本项目把 ChatGPT 单条回答的当前内容和交互状态转换为静态长图。组件兼容逻辑与面板、资源加载、排版和图片输出分别维护。
 
 ## 处理流程
@@ -116,7 +120,7 @@ rasterize(card, options)          // Promise<{ blob, layoutWidth, width, height,
 6. 为状态丢失、重复转换或清理误删等风险增加有意义的测试；可将真实样本提炼成 `tests/fixtures/`。
 7. 运行 `npm test`，再检查浅色、深色、窄宽度与交互后的实际 PNG。
 
-测试维护约定见 [tests/README.md](tests/README.md)。导出集成测试调用真实 `createCard()`，避免在测试内维护另一套阶段顺序。
+测试维护约定见 [tests/README.md](../tests/README.md)。导出集成测试调用真实 `createCard()`，避免在测试内维护另一套阶段顺序。
 
 仅采集样本不会自动接入测试。未知组件当前沿用既有通用清理行为。
 
@@ -153,6 +157,8 @@ Skybridge 的全宽同源内层 iframe 会逐层读取实际文档（最多五�
 1.3.5（2026-10-20）统一更新 npm 元数据、源 manifest、README 和更新日志；通过 120 项测试后重建 `dist/`，当时的发布包 `v1.3.5.zip` 与该轮构建一致。清理项目内系统杂项、开发临时产物和旧版发布包，保留本地样本、全部回归 fixture、产品图片及已有修改。文档不再依赖本机被忽略的样本说明文件；各阶段本地 PNG 验证结论保留，真实扩展重载验收仍待完成。
 
 1.3.6（2026-10-27）归纳混排卡片媒体修复：保留容器尺寸／比例／裁切，避免图表框与正文间距叠加，移除图片内部浮层；实现与验证记录见“混排卡片媒体”。npm 元数据、源与构建 manifest、README 统一为 1.3.6；全量 125 项测试通过，`v1.3.6.zip` 与当前 `dist/` 逐文件一致。新包校验后移除旧 `v1.3.5.zip`，历史版本说明保留；本地 PNG 验证通过，真实扩展重载验收仍待完成。
+
+1.3.7（2026-10-30）合并 2026-10-28 嵌套 checkbox 与 2026-10-30 固定尺寸图标盒修复；manifest `name` 改为 59 字符的商店标题，三种语言 `extensionDescription` 改为新简介（英文 124 字符），弹窗与工具栏标题同步，页面内面板副标题与导出图署名仍使用 `PLUGIN_NAME` 原名称。npm 元数据、源与构建 manifest、README 统一为 1.3.7；全量 128 项测试通过，`v1.3.7.zip` 与当前 `dist/` 逐文件一致，校验后移除旧 `v1.3.6.zip`。真实扩展重载验收仍待完成。
 
 ## 结构化网络图片（1.3.2）
 
@@ -213,3 +219,21 @@ SVG 在图片上下文中以低分辨率探测实际内容结束位置；双色�
 ## 固定尺寸容器与图形底色（2026-10-30）
 
 `data-export-shape` 只承担固定几何、无收缩和裁切，不强制 display:block，不改变组件原有 flex／grid 布局。仅无文本及 SVG／img／canvas 的图形另标记 `data-export-shape-paint`，沿用主题轨道默认底色；中性进度填充的 currentColor 回退保持。含内容的容器保留来源背景变量的计算值，包括透明和中性色，避免原本透明图标盒被替换成灰块。真实五个 40×40 图标盒 fixture 验证中心对齐与尺寸；128 项测试通过。本地 600px 浅深色、受控透明／中性背景 PNG 均为 1200×820，五个图标双轴中心偏差为 0；200px 轨道中 0%／50%／100% 填充宽度分别为 0／100／200px，源 DOM 不变。该回放验证图标与进度几何，不代表完整回答逐像素一致或真实页面颜色验收。临时浏览器产物已清理，正式 step-icons fixture 保留。
+
+## 目录
+
+- `src/content.js` / `src/dom.js`：回答识别、生成状态及导出入口；宿主回答选择器集中在 `src/chatgpt/selectors.js`。
+- `src/panel.js` / `src/settings.js`：预览面板、导出操作及本机偏好。
+- `src/render.js`：导出流程协调，保留 `createCard()` / `rasterize()` 接口。
+- `src/export/`：快照、适配器顺序、清理、长图组装、资源加载、布局及图片输出。
+- `src/export/adapters/`：结构化布局、表单、清单、图标、图片占位和代码块的静态转换。
+- `src/shared/`：适配器共用的勾选标记、颜色判断及异步超时。
+- `src/code-block.js` / `src/code-language.js` / `src/math-style.js`：代码与数学内容处理。
+- `src/layout.js` / `src/table-layout.js` / `src/image-width.js` / `src/block-spacing.js`：排版策略与测量。
+- `src/styles/`：长图基础、组件、字号／间距和控件样式；按固定顺序合并到 Shadow DOM。
+- `src/panel.css`：面板样式。
+- `samples/intelligent-ui/`：本机可选的真实样本、参考截图与导出对照，已由 Git 忽略；构建与测试不依赖此目录。
+- `tests/fixtures/`：自动化测试使用的精简 HTML。
+- `public/manifest.json`：Chrome Manifest V3 配置；ChatGPT 页面入口和 sandbox iframe 截图脚本分别匹配指定域名，API 权限为 storage，另需 `https://images.openai.com/*` 的网络图片访问权限；后台只接受 ChatGPT 主页面的指定图片路径请求。
+
+实现参考：[Chrome 内容脚本文档](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)、[html-to-image 项目文档](https://github.com/bubkoo/html-to-image)。

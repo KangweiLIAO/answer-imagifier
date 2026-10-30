@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 test('extension injects the UI on ChatGPT and capture worker only on visualization sandbox frames', async () => {
   const manifest = JSON.parse(await readFile('dist/manifest.json'));
-  assert.equal(manifest.name, 'Answer Imagifier - for ChatGPT');
+  assert.equal(manifest.name, 'Answer Imagifier: ChatGPT Long Screenshot & Answer to Image');
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.content_scripts[0].matches, ['https://chatgpt.com/*', 'https://chat.openai.com/*']);
   assert.deepEqual(manifest.content_scripts[1].matches, ['https://*.web-sandbox.oaiusercontent.com/*']);

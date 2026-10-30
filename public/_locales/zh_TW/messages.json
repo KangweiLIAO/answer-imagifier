@@ -1,8 +1,8 @@
 {
   "extensionDescription": {
-    "message": "將 ChatGPT 回答匯出為便於分享的 PNG/JPG 長圖，保留程式碼、表格、公式和圖表，圖片全部在本機產生。"
+    "message": "把整則 ChatGPT 回答匯出為 PNG/JPG 長圖，程式碼、表格、公式和 Mermaid 圖表完整保留。全部在本機產生，不上傳。"
   },
   "actionTitle": {
-    "message": "Answer Imagifier - for ChatGPT · 匯出長圖"
+    "message": "Answer Imagifier: ChatGPT Long Screenshot & Answer to Image · 匯出長圖"
   }
 }

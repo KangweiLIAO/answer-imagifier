@@ -1,8 +1,8 @@
-# Privacy Policy for Answer Imagifier - for ChatGPT
+# Privacy Policy for Answer Imagifier: ChatGPT Long Screenshot & Answer to Image
 
 Effective date: October 12, 2026
 
-Answer Imagifier - for ChatGPT (the "Extension") creates PNG or JPG images from ChatGPT answers. This policy explains how the Extension handles information.
+Answer Imagifier: ChatGPT Long Screenshot & Answer to Image (the "Extension") creates PNG or JPG images from ChatGPT answers. This policy explains how the Extension handles information.
 
 ## Information the Extension accesses
 
