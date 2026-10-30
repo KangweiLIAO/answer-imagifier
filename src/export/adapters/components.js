@@ -94,15 +94,19 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
       }
       // Empty flex children can be colored segments with no explicit height.
       const background = source.style.getPropertyValue('background-color');
+      const contentBearing = Boolean(source.textContent.trim() || source.querySelector('svg,img,canvas'));
       if (background && !background.includes('var(')) copy.style.backgroundColor = background;
       else if (background) {
         const resolved = style.getPropertyValue('background-color');
-        if (isChromaticColor(resolved)) copy.style.backgroundColor = resolved;
+        if (resolved && !resolved.includes('var(') && (contentBearing || isChromaticColor(resolved))) copy.style.backgroundColor = resolved;
       }
       // Fixed-height boxes in these components include empty progress tracks
       // and fills. Preserve dimensions, including a meaningful width of 0%.
       if (source.hasAttribute('data-d-has-height')) {
         copy.setAttribute('data-export-shape', '');
+        // Geometry is shared by containers and shapes; only empty graphics
+        // receive the neutral track paint. Keep container flex/grid layout.
+        if (!contentBearing) copy.setAttribute('data-export-shape-paint', '');
         for (const property of ['height', 'border-radius']) {
           const value = style.getPropertyValue(property);
           if (value && !value.includes('var(')) copy.style.setProperty(property, value);
