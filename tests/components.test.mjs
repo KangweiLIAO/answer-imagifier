@@ -207,3 +207,20 @@ test('media ownership follows neutral wrappers and authored proportions but stop
   assert.equal(clone.firstElementChild.style.borderRadius,'7px');
   assert.equal(clone.querySelector('[data-d-clip=false]').style.overflow,'');
 });
+
+test('fixed icon containers preserve layout and neutral paint while empty tracks keep theme fallback', async () => {
+  const {document}=createDOM(`<main>${await readFixture('step-icons')}<div data-d-component="box" data-d-has-height style="height:4px;background-color:var(--track)"></div></main>`);
+  const source=document.querySelector('main');const before=source.outerHTML;
+  const {clone,map}=cloneForAdapter(source,{stripStyles:true});
+  preserveComponents(clone,map,n=>({getPropertyValue:p=>p==='background-color'?'rgba(255, 255, 255, 0)':p==='justify-content'||p==='align-items'?'center':readStyle(n).getPropertyValue(p)}));
+  const boxes=[...clone.querySelectorAll('[data-export-shape]')];
+  assert.equal(boxes.length,6);
+  for(const b of boxes.slice(0,5)){
+    assert.equal(b.hasAttribute('data-export-shape-paint'),false);
+    assert.equal(b.style.backgroundColor,'rgba(255, 255, 255, 0)');
+    assert.equal(b.style.justifyContent,'center');assert.equal(b.style.alignItems,'center');
+    assert.equal(b.style.width,'40px');assert.equal(b.style.height,'40px');
+  }
+  assert.equal(boxes[5].hasAttribute('data-export-shape-paint'),true);
+  assert.equal(source.outerHTML,before);
+});

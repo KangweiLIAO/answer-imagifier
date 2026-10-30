@@ -1,6 +1,6 @@
 [English](README.md) | **简体中文**
 
-# Answer Imagifier - for ChatGPT
+# Answer Imagifier: ChatGPT Long Screenshot & Answer to Image
 
 把 **ChatGPT 单独一条回答或一个 Writing block** 渲染成一张完整的 PNG / JPG 格式化长图。
 
@@ -10,18 +10,18 @@
 
 ![演示：把一条 ChatGPT 回答导出为一张长图](public/vids/demo.gif)
 
-下面的动图和截图来自更早的版本。宽度控件现在的名称是 **Layout width（排版宽度）**。
+上面的动图来自更早的版本；下面的截图为当前面板，宽度控件名称为 **Layout width（排版宽度）**。
 
 <p>
-  <img src="public/imgs/0.png" alt="回答操作栏上的 Export image 按钮" width="420">
-  <img src="public/imgs/1.png" alt="导出面板：左侧为格式与排版设置，右侧为浅色预览" width="420">
+  <img src="public/imgs/hint.png" alt="回答操作栏上的 Export image 按钮及其提示：将整条回答导出为格式化长图" width="420">
+  <img src="public/imgs/chart.png" alt="导出面板：左侧为外观、格式与排版设置，右侧为柱状图卡片的浅色预览" width="420">
 </p>
 
-本仓库 `public/manifest.json` 版本为 **1.3.6**，与 Chrome 网上应用店上架版本一致。本版修复照片与 SVG 图示混排卡片的大小、标题对齐、间距和圆角裁切，并清理照片浮层；独立图表保留三档缩放。详细内容见 [更新日志](changelog.md)。产品向的英文说明见 [README.md](README.md)。
+本仓库 `public/manifest.json` 版本为 **1.3.7**，Chrome 网上应用店审核通过后上架版本随之更新。本版修复嵌套 checkbox 与标签上下堆叠、固定尺寸图标盒居中失效，并更新商店标题与简介。详细内容见 [更新日志](changelog.md)。产品向的英文说明见 [README.md](README.md)。
 
 ## 从商店安装
 
-在 Chrome 中打开 [Answer Imagifier - for ChatGPT](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe) 并添加。扩展在 `https://chatgpt.com/*` 与 `https://chat.openai.com/*` 上工作，需要 Chrome 120 或更高版本。
+在 Chrome 中打开 [Answer Imagifier](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe) 并添加。扩展在 `https://chatgpt.com/*` 与 `https://chat.openai.com/*` 上工作，需要 Chrome 120 或更高版本。
 
 ## 从源码安装
 
@@ -68,7 +68,7 @@ npm test
 发布包从通过测试的 `dist/` 生成，解压后根目录直接包含 `manifest.json`：
 
 ```sh
-(cd dist && zip -r ../v1.3.6.zip . -x '*.DS_Store' '__MACOSX/*')
+(cd dist && zip -r ../v1.3.7.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
 版本号需同步 `package.json`、`package-lock.json` 和 `public/manifest.json`，然后重新构建。新包与 `dist/` 内容及版本核对通过后，再删除旧包；当前构建和发布包保留在本机，不提交到 Git。
@@ -109,10 +109,10 @@ npm test
 
 ## 后续事项
 
-- 当前工作区已通过 127 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。更新日志里 2026-10-28 的嵌套 checkbox 修复已在本仓库源码中，该节仍标为「未发布」。
+- 当前工作区已通过 128 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。2026-10-28 的嵌套 checkbox 修复与 2026-10-30 的固定尺寸图标盒修复已并入 1.3.7。
 
 - 新兼容性案例保留来源 DOM、当前交互状态、原页面参考图、导出设置和实际导出图；长期样本可放在本机 `samples/intelligent-ui/`，自动化回归结构放在 `tests/fixtures/`。没有完整参考图或真实页面复验时，明确记录 pending／partial／fail。
 
 - 部分混合内容的本地深色 PNG 样本中，内嵌 SVG 架构图出现空白；单独图表样本导出正常，原因尚未定位，需进一步验证。小图标与提示卡片修复已单独验证。
 
-- `public/vids/demo.gif` 与 `public/imgs/` 仍是旧界面录制。宽度控件现为「排版宽度 / Layout width」。需要按当前面板重新录制演示。
+- `public/vids/demo.gif` 仍是旧界面录制，`public/imgs/` 截图已更新为当前面板。宽度控件现为「排版宽度 / Layout width」。需要按当前面板重新录制演示动图。

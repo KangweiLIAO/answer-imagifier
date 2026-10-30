@@ -1,8 +1,8 @@
 {
   "extensionDescription": {
-    "message": "将 ChatGPT 回答导出为便于分享的 PNG/JPG 长图，保留代码、表格、公式和图表，图片全部在本机生成。"
+    "message": "把整条 ChatGPT 回答导出为 PNG/JPG 长图，代码、表格、公式和 Mermaid 图表完整保留。全部在本机生成，不上传。"
   },
   "actionTitle": {
-    "message": "Answer Imagifier - for ChatGPT · 导出长图"
+    "message": "Answer Imagifier: ChatGPT Long Screenshot & Answer to Image · 导出长图"
   }
 }

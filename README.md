@@ -1,6 +1,6 @@
 **English** | [简体中文](README.zh-CN.md)
 
-# Answer Imagifier - for ChatGPT
+# Answer Imagifier: ChatGPT Long Screenshot & Answer to Image
 
 Turn one finished ChatGPT answer into a single clean PNG or JPG. Code highlighting, tables, math, Mermaid diagrams, cards, and supported maps stay in the picture, so you can save or share the whole reply without stitching screenshots.
 
@@ -10,18 +10,20 @@ Turn one finished ChatGPT answer into a single clean PNG or JPG. Code highlighti
 
 **[Add to Chrome](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe)**
 
-Free on the Chrome Web Store. It runs on [chatgpt.com](https://chatgpt.com) and [chat.openai.com](https://chat.openai.com), and needs Chrome 120 or later. This repository’s manifest is **1.3.6**, the same version as the store listing. Answer Imagifier is an independent extension and is not affiliated with OpenAI.
+Free on the Chrome Web Store. It runs on [chatgpt.com](https://chatgpt.com) and [chat.openai.com](https://chat.openai.com), and needs Chrome 120 or later. This repository’s manifest is **1.3.7**. The store listing moves to 1.3.7 once Chrome Web Store review approves it. Answer Imagifier is an independent extension and is not affiliated with OpenAI.
 
 ![Demo of exporting a ChatGPT answer as one long image](public/vids/demo.gif)
 
-The animation and the stills below are from an earlier build. The width control is now labeled **Layout width**.
+The animation is from an earlier build; the stills below show the current panel, where the width control is labeled **Layout width**.
+
+<img src="public/imgs/hint.png" alt="Export image button on the answer's action row, with the tooltip “Export the entire response as a formatted long image”" width="420">
 
 <p>
-  <img src="public/imgs/0.png" alt="Export image button on the action row under a finished ChatGPT answer" width="420">
-  <img src="public/imgs/1.png" alt="Export panel showing a light-theme preview, with format and layout controls" width="420">
+  <img src="public/imgs/chart.png" alt="Export panel with a light-theme preview of a performance overview card and bar chart, with appearance, format, layout width, resolution, font size, diagram size and spacing controls" width="420">
+  <img src="public/imgs/quiz.png" alt="Export panel with a dark-theme preview of a survey card, keeping the selected radio button and checked checkboxes" width="420">
 </p>
 
-<img src="public/imgs/3.png" alt="Exported image with a formula, syntax-highlighted Python, and a table" width="720">
+<img src="public/imgs/map.png" alt="Exported image of an Ottawa walking-tour answer with a native map, numbered pins and the walking route, and the Answer Imagifier credit in the header" width="720">
 
 ## Features
 
@@ -57,7 +59,7 @@ Details: [Privacy policy](PRIVACY_POLICY.md).
 
 ## Install from source / development
 
-`public/manifest.json` in this repository is **1.3.6**. `dist/` and release zips are build output and are not committed.
+`public/manifest.json` in this repository is **1.3.7**. `dist/` and release zips are build output and are not committed.
 
 Node.js 20.19 or later (the lockfile’s packages declare that engine):
 
@@ -77,7 +79,7 @@ npm test
 A release zip is taken from a tested `dist/` so the archive root contains `manifest.json`. Keep `package.json`, `package-lock.json`, and `public/manifest.json` on the same version, then rebuild:
 
 ```sh
-(cd dist && zip -r ../v1.3.6.zip . -x '*.DS_Store' '__MACOSX/*')
+(cd dist && zip -r ../v1.3.7.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
 Pipeline, module boundaries, and how to add a component: [Architecture notes](docs/ARCHITECTURE.md) (Chinese). Test layout: [tests/README.md](tests/README.md). Release notes: [changelog.md](changelog.md) (Chinese). `samples/intelligent-ui/` is an optional local sample folder and is gitignored; automated fixtures live in `tests/fixtures/`. Open follow-ups, including an unresolved blank SVG in some dark mixed-content samples, stay in the [Chinese README](README.zh-CN.md).
