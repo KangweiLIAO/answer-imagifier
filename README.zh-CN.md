@@ -115,4 +115,4 @@ npm test
 
 - 部分混合内容的本地深色 PNG 样本中，内嵌 SVG 架构图出现空白；单独图表样本导出正常，原因尚未定位，需进一步验证。小图标与提示卡片修复已单独验证。
 
-- `public/vids/demo.gif` 仍是旧界面录制，`public/imgs/` 截图已更新为当前面板。宽度控件现为「排版宽度 / Layout width」。需要按当前面板重新录制演示动图。
+- `public/vids/demo.gif` 已于 2026-11 按 1.3.7 面板重新录制，`public/imgs/` 截图也已更新为当前面板。`public/vids/demo.mp4` 与 `demo.webm` 仍是旧录制，目前未被 README 引用。
