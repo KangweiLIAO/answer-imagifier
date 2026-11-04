@@ -6,6 +6,7 @@ import cardCSS from './styles/card.js';
 import { element, getAnswers, fileName, answerTitle, isStreaming } from './dom.js';
 import { createCard, rasterize } from './render.js';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
+import { claimReviewInvite, REVIEW_URL } from './review-invite.js';
 import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
 import { CORNER_RADIUS } from './image-style.js';
 import { WRITING_BLOCK_SELECTOR, WRITING_EDITOR_SELECTOR } from './chatgpt/selectors.js';
@@ -50,6 +51,7 @@ export function openPanel(preselected, { writingBlock } = {}) {
       <label class="switch-row${writingBlock ? ' hidden' : ''}" for="prompt">${t('includePrompt')}<input type="checkbox" id="prompt" role="switch"></label>
       <label class="switch-row" for="showImages">${t('showImages')}<input type="checkbox" id="showImages" role="switch" checked></label>
       <label class="switch-row" for="showCredit">${t('showExtensionCredit')}<input type="checkbox" id="showCredit" role="switch" checked></label>
+      <div class="review-invite hidden"><p role="status">${t('reviewInvite')}</p><div class="review-actions"><a href="${REVIEW_URL}" target="_blank" rel="noopener noreferrer">${t('leaveReview')}</a><button type="button" class="dismiss-review">${t('dismissReview')}</button></div></div>
       <div class="local-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>${t('localOnly')}</span></div>
     </aside><main class="workspace"><div class="preview-bar"><span class="preview-label"><span class="dot"></span>${t('preview')}</span><span class="dimensions">${t('preparing')}</span></div><div class="preview-scroll"><div class="placeholder hidden"></div><img class="preview-image hidden" alt="${t('previewAlt')}"></div><div class="render-overlay"><button class="action primary rerender" disabled>${t('startRender')}</button></div><footer class="bottom-bar"><div class="status" role="status" aria-live="polite"></div><button class="action copy" disabled><span>${t('copy')}</span></button><button class="action primary save" disabled>${downloadIcon}<span>${t('save', { format: 'PNG' })}</span></button></footer></main></div></div>`;
   const mount = element('div', 'render-mount'); mount.setAttribute('aria-hidden', 'true');
@@ -184,6 +186,12 @@ export function openPanel(preselected, { writingBlock } = {}) {
   });
   for (const name of ['widthMode', 'scale', 'prompt', 'showCredit', 'showImages']) $(`#${name}`).addEventListener('change', event => {
     options[name] = ['prompt', 'showCredit', 'showImages'].includes(name) ? event.target.checked : name === 'widthMode' ? event.target.value : Number(event.target.value); if (validLayout(options)) saveSettings(options); settingsChanged();
+    if (name === 'showCredit') claimReviewInvite().then(show => {
+      if (show && !closed) $('.review-invite').classList.remove('hidden');
+    });
+  });
+  for (const selector of ['.dismiss-review', '.review-actions a']) $(selector).addEventListener('click', () => {
+    $('.review-invite').classList.add('hidden');
   });
   for (const name of ['width', 'customFontSize']) $(`#${name}`).addEventListener('input', event => {
     options[name] = event.target.value === '' ? NaN : Number(event.target.value);

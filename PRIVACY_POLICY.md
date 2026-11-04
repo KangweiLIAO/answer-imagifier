@@ -29,9 +29,11 @@ Page resources needed to reproduce visible content, such as eligible fonts or gr
 
 The Extension stores export preferences (theme, format, automatic or custom layout width, quality, preset or custom font size, diagram size, layout spacing, whether to auto-render on entry, whether to include the prompt, whether to show images, and whether to show extension credit) locally using chrome.storage.local. These preferences persist across browser restarts and are not synced through Chrome or transmitted to the developer. Uninstalling the Extension removes this stored data. Conversation content, custom file names, and generated images are not saved in extension storage. Generated image data remains in browser memory only while the export panel is open. It is released when the panel closes or the page unloads. An image leaves browser memory only when you choose to download it or copy it to the clipboard; the resulting file or clipboard item is then controlled by you and your device.
 
+The Extension also stores a local flag recording whether the optional Chrome Web Store review invitation has been shown. It does not track whether you submit a review. The store opens only when you click the review link.
+
 ## Permissions
 
-The Extension requests the storage permission solely to save and restore export preferences. Content scripts run on ChatGPT pages and approved visualization sandbox frames. Host access to `https://images.openai.com/*` allows the background worker to read supported photos despite page-level CORS restrictions. Requests are restricted to approved ChatGPT main-frame senders and static image resource paths; redirects, unsupported image types and oversized responses are rejected.
+The Extension requests the storage permission to save and restore export preferences and remember whether the review invitation has been shown. Content scripts run on ChatGPT pages and approved visualization sandbox frames. Host access to `https://images.openai.com/*` allows the background worker to read supported photos despite page-level CORS restrictions. Requests are restricted to approved ChatGPT main-frame senders and static image resource paths; redirects, unsupported image types and oversized responses are rejected.
 
 ## Third-party services
 

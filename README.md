@@ -34,7 +34,7 @@ The animation is from an earlier build; the stills below show the current panel,
 - Keep alignment, declared column widths, spacing, and rounded clipping from the answer. Schedules and stat cards use those declared widths. A photo mixed with an SVG diagram keeps its size, crop, and the card title beside it; loading, action, and source-link overlays on that photo are left out. A standalone diagram still follows the diagram size setting.
 - Capture supported ChatGPT sandbox visualizations and native Mapbox maps as still images, scaled to the export width.
 - Choose light or dark, automatic or custom layout width (600–1600 px), resolution (1×, 2×, or 3×), font size (including a custom 12–24 px size), diagram size, and spacing.
-- Optionally include your prompt, show or hide photos, show or hide the extension credit, and auto-render when the panel opens.
+- Optionally include your prompt, show or hide photos, show or hide the extension credit, and auto-render when the panel opens. The first manual credit toggle shows a dismissible review invitation; it never blocks the switch or opens the store automatically.
 - Output pixel width is layout width × resolution. A 760 px layout at 2× is 1520 px wide. Automatic width follows font size and table content, up to 1600 px. Custom width shows that estimate in the panel.
 
 Very long answers may be rendered at a lower scale so the full image still fits. If it still cannot, export stops with an error and does not crop the answer. Generated images are omitted; use ChatGPT’s own download for those. An answer that is only a generated image, with its status and edit controls, does not get an Export image button. A mixed answer still exports the text around that image.
@@ -51,7 +51,7 @@ The button is on the answer itself, not inside ChatGPT’s share dialog.
 
 Images are rendered locally in your browser. The extension does not upload your conversations, call the ChatGPT or OpenAI API, read cookies, or create public share links.
 
-The only entry under `permissions` is `storage`. It remembers export preferences on this device (theme, format, width, resolution, type size, diagram size, spacing, and the toggles above). Those preferences are not synced through Chrome. Uninstalling the extension removes them. Conversations, custom file names, and generated images are not written to extension storage.
+The only entry under `permissions` is `storage`. It remembers export preferences on this device (theme, format, width, resolution, type size, diagram size, spacing, and the toggles above). A separate local flag remembers whether the review invitation has been shown; it does not track submitted reviews. This data is not synced through Chrome. Uninstalling the extension removes them. Conversations, custom file names, and generated images are not written to extension storage.
 
 Host access to `https://images.openai.com/*` lets a background worker read supported photos inside structured cards. That request sends the image URL only, without cookies or your answer text. While drawing, Chrome may also load fonts and similar page assets from their original hosts. Those assets are not sent to the extension author.
 

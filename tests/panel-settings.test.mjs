@@ -4,6 +4,59 @@ import { DEFAULT_SETTINGS } from '../src/settings.js';
 import { createBrowser } from './helpers/browser.mjs';
 import { loadModule } from './helpers/module.mjs';
 
+for (const initialCredit of [true, false]) test(`credit switch invites once after a manual change from ${initialCredit}`, async t => {
+  const { document, window, globals } = createBrowser(t, '<div id="answer" data-message-author-role="assistant">Answer</div>');
+  const data = { exportSettings: { ...DEFAULT_SETTINGS, showCredit: initialCredit } };
+  const panel = await loadModule('src/panel.js', {
+    globals: { ...globals, clearTimeout: () => {}, chrome: { storage: { local: {
+      get: async key => ({ [key]: data[key] }),
+      set: async value => Object.assign(data, value),
+    } } } },
+    mocks: {
+      'src/render.js': { createCard: async () => {}, rasterize: async () => {} },
+      'src/i18n.js': { PLUGIN_NAME: 'Test', locale: 'en', t: key => key },
+    },
+  });
+  const flush = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
+  const open = async () => {
+    panel.openPanel(document.querySelector('#answer'));
+    await flush();
+    return document.querySelector('#answer-imagifier-root').shadowRoot;
+  };
+  let root = await open();
+  const hidden = () => root.querySelector('.review-invite').classList.contains('hidden');
+  const toggle = async () => {
+    const credit = root.querySelector('#showCredit');
+    credit.checked = !credit.checked;
+    credit.dispatchEvent(new window.Event('change'));
+    await flush();
+  };
+  assert.equal(hidden(), true);
+  assert.equal(data.reviewInviteShown, undefined);
+  root.querySelector('#showImages').dispatchEvent(new window.Event('change'));
+  await flush();
+  assert.equal(data.reviewInviteShown, undefined);
+  await toggle();
+  assert.equal(data.exportSettings.showCredit, !initialCredit);
+  assert.equal(hidden(), false);
+  assert.equal(data.reviewInviteShown, true);
+  const link = root.querySelector('.review-actions a');
+  assert.equal(link.getAttribute('href'), 'https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe/reviews');
+  assert.equal(link.getAttribute('target'), '_blank');
+  assert.equal(link.getAttribute('rel'), 'noopener noreferrer');
+  root.querySelector(initialCredit ? '.dismiss-review' : '.review-actions a').click();
+  assert.equal(hidden(), true);
+  await toggle();
+  assert.equal(hidden(), true);
+  assert.equal(data.exportSettings.showCredit, initialCredit);
+  root.querySelector('.close').click();
+  root = await open();
+  assert.equal(hidden(), true);
+  await toggle();
+  assert.equal(hidden(), true);
+  root.querySelector('.close').click();
+});
+
 test('block export is scoped, excludes prompts without changing saved preferences, and rejects stale targets', async t => {
   const { document, globals } = createBrowser(t, `<div id="answer" data-message-author-role="assistant"><p>Outside</p><div id="block" data-testid="chatgpt-writing-block"><div role="textbox" aria-multiline="true"><h1>Document title</h1><p>Inside</p></div></div><div id="other">Unrelated</div></div>`);
   document.title = 'Conversation';

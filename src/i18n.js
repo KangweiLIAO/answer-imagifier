@@ -84,6 +84,9 @@ export const messages = {
     "en": "Ultra"
   },
   "showExtensionCredit": { "zh": "显示扩展署名", "en": "Show extension credit" },
+  "reviewInvite": { "zh": "喜欢 Answer Imagifier？欢迎在 Chrome 应用商店留下评价，支持这个扩展。", "en": "Enjoying Answer Imagifier? Leave a review on the Chrome Web Store to support the extension." },
+  "leaveReview": { "zh": "去评价", "en": "Leave a review" },
+  "dismissReview": { "zh": "不用了", "en": "No thanks" },
   "includePrompt": {
     "zh": "包含我的提问",
     "en": "Include my prompt"
