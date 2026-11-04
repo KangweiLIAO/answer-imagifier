@@ -107,11 +107,4 @@ npm test
 
 实现参考：[Chrome 内容脚本文档](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)、[html-to-image 项目文档](https://github.com/bubkoo/html-to-image)。
 
-## 验证与待办
-
-- 当前 134 项自动化测试通过。未登录结构的本地实际 PNG 验证覆盖公式卡片、独立公式、含公式表格、代码和列表；640 px / Large 无横向溢出。建议加宽布局的保守提示仍保留。
-- 原 demo 会话需在重载扩展并刷新 ChatGPT 后验收。字体源遗漏已有复现与回归测试，demo 中偶发字形重叠仍待原会话复验。本地结构回放不代表与真实页面逐像素一致。
-- 部分混合内容的本地深色 PNG 中，内嵌 SVG 架构图出现空白；单独图表导出正常，原因尚未定位。
-- 新兼容案例需核对原 DOM、当前交互状态、参考图、导出设置和实际图片。正式样本保留在本机 `samples/intelligent-ui/`，自动化回归保留在 `tests/fixtures/`；缺少真实页面复验时明确标注待验收。
-
 开发直接提交并推送到 `main`，`grok` 保留为独立工作分支。版本、变更和验证历史由 Git 保存，文档只维护当前状态。

@@ -82,6 +82,6 @@ A release zip is taken from a tested `dist/` so the archive root contains `manif
 (cd dist && zip -r ../v1.3.8.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
-Pipeline, module boundaries, and how to add a component: [Architecture notes](docs/ARCHITECTURE.md) (Chinese). Test layout: [tests/README.md](tests/README.md). Version and change history are maintained in Git. `samples/intelligent-ui/` is an optional local sample folder and is gitignored; automated fixtures live in `tests/fixtures/`. Open follow-ups, including an unresolved blank SVG in some dark mixed-content samples, stay in the [Chinese README](README.zh-CN.md).
+Pipeline, module boundaries, and how to add a component: [Architecture notes](docs/ARCHITECTURE.md) (Chinese). Test layout: [tests/README.md](tests/README.md). Version and change history are maintained in Git. `samples/intelligent-ui/` is an optional local sample folder and is gitignored; automated fixtures live in `tests/fixtures/`.
 
 The in-page UI follows Chrome’s language: English, or Simplified Chinese for any Chinese locale (including Traditional Chinese browser settings). The Web Store listing is published in English, Simplified Chinese, and Traditional Chinese.
