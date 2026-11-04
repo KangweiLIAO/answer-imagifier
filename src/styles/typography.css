@@ -35,6 +35,9 @@
 .ai-card :is([data-export-component=box],[data-export-component=row],[data-export-component=grid],[data-export-component=grid-item],[data-export-component=form],[data-export-component=radio-group],[data-export-component=list],[data-export-component=list-item],[data-export-form-layout]) hr{margin-block:calc(4px * var(--spacing-scale))}
 .ai-card [data-export-shape]{gap:0}
 .ai-card .answer-content>:first-child{margin-top:0}
+.ai-card [data-export-display-math]:not([data-math]){display:block;text-align:center}
+.ai-card [data-export-formula-card]{border:1px solid #dedede;border-radius:12px;padding:16px;min-width:0}
+.ai-card[data-theme=dark] [data-export-formula-card]{border-color:#494949}
 
 /* Space the visible block's outer wrapper, including wrappers stripped of host CSS. */
 .ai-card [data-export-flow]{margin-block:calc(16px * var(--spacing-scale))!important}

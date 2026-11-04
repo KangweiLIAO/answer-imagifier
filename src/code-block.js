@@ -1,7 +1,7 @@
 import hljs from 'highlight.js/lib/common';
 import { detectCodeLanguage } from './code-language.js';
 
-export const CODE_BLOCK_SELECTOR = '[data-markdown-copy="code-block"],pre';
+export const CODE_BLOCK_SELECTOR = '[data-markdown-copy="code-block"],div:has(>[data-message-content-controls]):has(>pre),pre';
 export function getCodeBlocks(root) {
   const blocks = [...root.querySelectorAll(CODE_BLOCK_SELECTOR)];
   return blocks.filter(block => !blocks.some(other => other !== block && other.contains(block)));

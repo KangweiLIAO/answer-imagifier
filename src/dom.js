@@ -8,7 +8,10 @@ export function isExportableAnswer(answer) {
   // Generated-image status, captions and editing controls are not exportable
   // prose. Keep text outside the gallery, including mixed text/image answers.
   clone.querySelectorAll('[data-testid*="image-generation"],[data-testid*="generated-image"],[data-image-generation],.sr-only,.visually-hidden,[role="tooltip"]').forEach(el => el.remove());
-  clone.querySelectorAll('h4.sr-only,button,[data-answer-imagifier]').forEach(el => el.remove());
+  clone.querySelectorAll('h4.sr-only,button,[data-answer-imagifier]').forEach(el => {
+    if (el.matches('button[aria-haspopup="dialog"]') && el.querySelector('[data-assistant-math-rendered] math')) return;
+    el.remove();
+  });
   return Boolean(clone.textContent.trim());
 }
 export function getAnswers() {
@@ -24,6 +27,8 @@ export function getTurn(answer) {
   return answer.closest(TURN_SELECTOR) || answer.parentElement;
 }
 function messageText(message) {
+  const guestPrompt = message.querySelector('[data-user-message-copy]');
+  if (guestPrompt) return guestPrompt.textContent.trim();
   const clone = message.cloneNode(true);
   clone.querySelectorAll('h4.sr-only,button,[data-answer-imagifier]').forEach(el => el.remove());
   return clone.textContent.trim();
@@ -42,7 +47,7 @@ export function getPrompt(answer) {
 // New turns contain user and assistant action rows. Only accept a row after
 // this answer, before the next message, and outside any dialog or answer body.
 export function getActionRow(answer, turn = getTurn(answer)) {
-  return [...turn.querySelectorAll('.turn-action-controls')].find(row => {
+  return [...turn.querySelectorAll('.turn-action-controls,[data-assistant-message-actions]')].find(row => {
     if (answer.contains(row) || row.closest('[role="dialog"],dialog,[role="menu"]')) return false;
     if (!(answer.compareDocumentPosition(row) & 4)) return false;
     return ![...turn.querySelectorAll(`${ANSWER_SELECTOR},${USER_SELECTOR}`)].some(message =>
@@ -54,6 +59,9 @@ export function getActionRow(answer, turn = getTurn(answer)) {
 // Text alone is not a completion signal: streaming and tool pauses also have text.
 export function isAnswerReady(answer) {
   if (isStreaming()) return false;
+  const guestTurn = answer.closest('[data-message-role="assistant"]');
+  if (guestTurn) return guestTurn.hasAttribute('data-message-complete') &&
+    !answer.querySelector('[aria-busy="true"]') && Boolean(getActionRow(answer)?.querySelector('button:not([data-answer-imagifier])'));
   if (!answer.closest('[data-content-search-turn-key]')) return true;
   const row = getActionRow(answer);
   return Boolean(row?.querySelector('button:not([data-answer-imagifier])'));
@@ -71,6 +79,12 @@ export function fileName(title, format) {
     .trim()
     .slice(0, 64);
   return `${base || 'ChatGPT-answer'}.${format}`;
+}
+export function answerTitle(answer, title = document.title) {
+  const conversation = title.trim().replace(/\s+[-–—|]\s+ChatGPT$/i, '').trim();
+  if (conversation && !/^ChatGPT(?:\s*:|$)/i.test(conversation)) return conversation;
+  return answer?.querySelector('h1,h2,h3')?.textContent.trim() ||
+    (answer ? getPrompt(answer).slice(0, 64) : '') || 'ChatGPT-answer';
 }
 export function exportScale(width, height, requested = 2) {
   // Bound both axis length and total allocation; never silently crop a long answer.

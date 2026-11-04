@@ -107,5 +107,5 @@ let timer;
 new MutationObserver(mutations => {
   if (mutations.every(m => m.target instanceof Element && (m.target.closest('#answer-imagifier-root') || m.target.closest(`[${marker}]`)))) return;
   if (!timer) timer = setTimeout(() => { timer = null; scan(); }, 180);
-}).observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['data-testid', 'aria-label', 'data-is-streaming', 'data-message-author-role', 'data-content-search-unit-key', 'data-content-search-turn-key'] });
+}).observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['data-testid', 'aria-label', 'data-is-streaming', 'data-message-author-role', 'data-content-search-unit-key', 'data-content-search-turn-key', 'data-message-role', 'data-message-complete', 'aria-busy'] });
 scan();

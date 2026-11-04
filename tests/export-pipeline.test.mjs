@@ -359,3 +359,42 @@ test('nested criterion checkbox labels retain their actual row owner and current
   assert.equal(output.querySelectorAll('label p').length,10);
   assert.equal(source.outerHTML,before);
 });
+
+test('logged-out code headers are replaced with their code block and formula launchers become inert cards', async t => {
+  const {source, render} = await setup(t, `<p data-d-component="text">Introduction</p><div><span data-message-content-controls><button>Copy code</button></span><div><span>python</span></div><pre><code data-code-language="python">print(42)</code></pre></div><section><button aria-haspopup="dialog" aria-label="Show visualization"><span aria-hidden="true">Expand</span><span><span data-assistant-math-rendered="inline"><span class="katex"><math><mfrac><mi>a</mi><mi>b</mi></mfrac></math></span></span></span><span aria-hidden="true"><svg/></span></button></section><p data-d-component="text">After</p>`);
+  const before = source.outerHTML;
+  const {output} = await render();
+  assert.equal(output.querySelectorAll('.code-label').length, 1);
+  assert.equal(output.querySelectorAll('pre').length, 1);
+  assert.equal(output.textContent.match(/python/g).length, 1);
+  assert.equal(output.querySelector('pre code').textContent, 'print(42)');
+  assert.equal(output.querySelector('[data-export-formula-card] math mfrac').textContent, 'ab');
+  assert.equal(output.querySelector('button,[aria-haspopup],svg,[data-message-content-controls]'), null);
+  assert.deepEqual([...output.querySelectorAll('[data-export-flow=paragraph]')].map(e=>e.textContent), ['Introduction','After']);
+  assert.equal(source.outerHTML, before);
+});
+
+test('guest display math and table formulas survive cleanup without spacing hidden MathML', async t => {
+  const {source, render} = await setup(t, `<div data-d-component="math" data-d-block><span class="katex"><span class="katex-mathml"><math display="block" style="width:700px;height:40px"><mfrac><mn>1</mn><mn>2</mn></mfrac></math></span><span class="katex-html" aria-hidden="true"><span class="frac-line" style="border-bottom-width:.04em"></span>Visual formula</span></span></div><div data-d-component="table" data-d-column-sizing="auto"><div><table><tbody data-d-component="table-section"><tr data-d-component="table-row"><th data-d-component="table-cell"><p data-d-component="text">Formula</p></th></tr><tr data-d-component="table-row"><td data-d-component="table-cell"><p data-d-component="text"><span data-d-component="math"><span class="katex"><math><msup><mi>x</mi><mn>2</mn></msup></math><span class="katex-html" aria-hidden="true">x²</span></span></span></p></td></tr></tbody></table></div></div>`);
+  for (const table of source.querySelectorAll('table')) {
+    Object.defineProperty(table, 'rows', {get: () => [...table.querySelectorAll('tr')]});
+    const prototype = Object.getPrototypeOf(table);
+    const previousRows = Object.getOwnPropertyDescriptor(prototype, 'rows');
+    const previousCells = Object.getOwnPropertyDescriptor(prototype, 'cells');
+    Object.defineProperty(prototype, 'rows', {configurable:true, get() {return [...this.querySelectorAll('tr')];}});
+    Object.defineProperty(prototype, 'cells', {configurable:true, get() {return [...this.querySelectorAll('th,td')];}});
+    t.after(() => {
+      if (previousRows) Object.defineProperty(prototype, 'rows', previousRows); else delete prototype.rows;
+      if (previousCells) Object.defineProperty(prototype, 'cells', previousCells); else delete prototype.cells;
+    });
+  }
+  const {output} = await render({widthMode:'custom', width:640, fontSize:'large'});
+  assert.equal(output.querySelectorAll('[data-export-display-math]').length, 1);
+  assert.equal(output.querySelector('math[display="block"]').style.width, 'auto');
+  assert.equal(output.querySelector('math[display="block"]').style.height, 'auto');
+  assert.ok(output.querySelector('[data-d-block][data-export-display-math]'));
+  assert.equal(output.querySelectorAll('.katex-html').length, 2);
+  assert.equal(output.querySelectorAll('table th').length, 1);
+  assert.equal(output.querySelectorAll('table td math').length, 1);
+  assert.equal(output.querySelector('td [data-export-flow]'), null);
+});

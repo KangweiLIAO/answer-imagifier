@@ -46,7 +46,7 @@ export function preserveComponents(clone, sourceByCopy, readStyle = source => ge
     }
     // Independent prose uses the shared block spacing. Text inside a card,
     // list or table belongs to that component's internal layout instead.
-    if (type === 'text' && copy.localName === 'p' && source.hasAttribute('data-d-text-flow')) {
+    if (type === 'text' && copy.localName === 'p') {
       let nested = false;
       for (let parent = copy.parentElement; parent && parent !== clone; parent = parent.parentElement) {
         if (parent.matches('li,td,th,blockquote,form,[data-d-component="box"],[data-d-component="row"],[data-d-component="grid"],[data-d-component="list"],[data-d-component="list-item"]')) {

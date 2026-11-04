@@ -16,3 +16,11 @@ test('download names do not contain invalid filename characters', () => {
   assert.equal(fileName('///', 'jpg'), 'ChatGPT-answer.jpg');
   assert.equal(fileName('My answer.png', 'jpg'), 'My answer.jpg');
 });
+
+test('generic ChatGPT page titles use an answer heading for the filename', async () => {
+  const {answerTitle} = await import('../src/dom.js');
+  const answer = {querySelector: () => ({textContent:'Quadratic formula'})};
+  assert.equal(answerTitle(answer, 'ChatGPT: Chat, Work, Create & Code with AI'), 'Quadratic formula');
+  assert.equal(answerTitle(answer, 'Named conversation - ChatGPT'), 'Named conversation');
+  assert.equal(answerTitle(null, 'ChatGPT'), 'ChatGPT-answer');
+});

@@ -10,7 +10,7 @@ Turn one finished ChatGPT answer into a single clean PNG or JPG. Code highlighti
 
 **[Add to Chrome](https://chromewebstore.google.com/detail/answer-imagifier-for-chat/llhbppnankbnkddcmhfejoegcembkdfe)**
 
-Free on the Chrome Web Store. It runs on [chatgpt.com](https://chatgpt.com) and [chat.openai.com](https://chat.openai.com), and needs Chrome 120 or later. This repository’s manifest is **1.3.7**. The store listing moves to 1.3.7 once Chrome Web Store review approves it. Answer Imagifier is an independent extension and is not affiliated with OpenAI.
+Free on the Chrome Web Store. It runs on [chatgpt.com](https://chatgpt.com) and [chat.openai.com](https://chat.openai.com), and needs Chrome 120 or later. This repository’s manifest is **1.3.8**. The store listing moves to 1.3.8 once Chrome Web Store review approves it. Answer Imagifier is an independent extension and is not affiliated with OpenAI.
 
 ![Demo of exporting a ChatGPT answer as one long image](public/vids/demo.gif)
 
@@ -59,7 +59,7 @@ Details: [Privacy policy](PRIVACY_POLICY.md).
 
 ## Install from source / development
 
-`public/manifest.json` in this repository is **1.3.7**. `dist/` and release zips are build output and are not committed.
+`public/manifest.json` in this repository is **1.3.8**. `dist/` and release zips are build output and are not committed.
 
 Node.js 20.19 or later (the lockfile’s packages declare that engine):
 
@@ -79,7 +79,7 @@ npm test
 A release zip is taken from a tested `dist/` so the archive root contains `manifest.json`. Keep `package.json`, `package-lock.json`, and `public/manifest.json` on the same version, then rebuild:
 
 ```sh
-(cd dist && zip -r ../v1.3.7.zip . -x '*.DS_Store' '__MACOSX/*')
+(cd dist && zip -r ../v1.3.8.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
 Pipeline, module boundaries, and how to add a component: [Architecture notes](docs/ARCHITECTURE.md) (Chinese). Test layout: [tests/README.md](tests/README.md). Release notes: [changelog.md](changelog.md) (Chinese). `samples/intelligent-ui/` is an optional local sample folder and is gitignored; automated fixtures live in `tests/fixtures/`. Open follow-ups, including an unresolved blank SVG in some dark mixed-content samples, stay in the [Chinese README](README.zh-CN.md).

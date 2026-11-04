@@ -178,3 +178,29 @@ test('answer previews inside native dialogs and menus are not export targets', (
   assert.equal(isExportableAnswer(answer({ role: 'dialog' })), false);
   assert.equal(isExportableAnswer(answer(null, '   ')), false);
 });
+
+test('logged-out messages use markdown roots, native actions and the prompt inside its copy button', t => {
+  const {document} = setup(t, `<ol><li data-message-role="user"><h4 data-message-attribution>You said:</h4><button data-user-message-bubble><p data-user-message-copy>Guest question</p></button></li><li data-message-role="assistant" data-message-complete><h4 data-message-attribution>ChatGPT said:</h4><div data-assistant-markdown-root><div aria-busy="false"><h2>Answer</h2><p>Content</p></div></div><div data-assistant-message-actions><button>Copy response</button></div></li></ol>`);
+  const [answer] = getAnswers();
+  assert.equal(getAnswers().length, 1);
+  assert.ok(answer.hasAttribute('data-assistant-markdown-root'));
+  assert.equal(getPrompt(answer), 'Guest question');
+  assert.equal(getTurn(answer).getAttribute('data-message-role'), 'assistant');
+  assert.ok(getActionRow(answer).hasAttribute('data-assistant-message-actions'));
+  assert.equal(isAnswerReady(answer), true);
+  getTurn(answer).removeAttribute('data-message-complete');
+  assert.equal(isAnswerReady(answer), false);
+  getTurn(answer).setAttribute('data-message-complete', '');
+  answer.firstElementChild.setAttribute('aria-busy', 'true');
+  assert.equal(isAnswerReady(answer), false);
+  answer.firstElementChild.setAttribute('aria-busy', 'false');
+  getActionRow(answer).remove();
+  assert.equal(isAnswerReady(answer), false);
+  assert.equal(document.querySelectorAll('[data-message-attribution]').length, 2);
+});
+
+test('a guest answer consisting only of a formula card remains exportable', t => {
+  setup(t, '<li data-message-role="assistant" data-message-complete><div data-assistant-markdown-root><button aria-haspopup="dialog"><span data-assistant-math-rendered="inline"><math><mi>x</mi><mo>=</mo><mn>1</mn></math></span></button></div><div data-assistant-message-actions><button>Copy response</button></div></li>');
+  assert.equal(getAnswers().length, 1);
+  assert.equal(isAnswerReady(getAnswers()[0]), true);
+});

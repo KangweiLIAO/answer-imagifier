@@ -3,7 +3,7 @@ import panelCSS from './panel.css';
 import infoIcon from './assets/info.svg';
 import pluginLogo from '../public/icons/icon128.png';
 import cardCSS from './styles/card.js';
-import { element, getAnswers, fileName, isStreaming } from './dom.js';
+import { element, getAnswers, fileName, answerTitle, isStreaming } from './dom.js';
 import { createCard, rasterize } from './render.js';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
 import { validLayout, inRange, WIDTH_LIMITS, FONT_LIMITS } from './layout.js';
@@ -28,7 +28,7 @@ export function openPanel(preselected, { writingBlock } = {}) {
   const answer = preselected && answers.includes(preselected) ? preselected : answers.at(-1);
   const target = writingBlock || answer;
   const options = { ...DEFAULT_SETTINGS };
-  const conversationName = document.title.trim().replace(/\s+[-–—|]\s+ChatGPT$/i, '').trim();
+  const conversationName = answerTitle(answer);
   const defaultFileName = writingBlock ? writingBlock.querySelector(`${WRITING_EDITOR_SELECTOR} h1,${WRITING_EDITOR_SELECTOR} h2`)?.textContent.trim() || `${conversationName} - Writing` : conversationName;
   const host = element('div'); host.id = 'answer-imagifier-root'; host.lang = locale === 'zh' ? 'zh-CN' : 'en';
   const shadow = host.attachShadow({ mode: 'open' });

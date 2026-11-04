@@ -3,14 +3,15 @@ import { mkdir, copyFile, cp, rm } from 'node:fs/promises';
 import { htmlToImageCsp } from './html-to-image-csp.mjs';
 import { htmlToImageScroll } from './html-to-image-scroll.mjs';
 import { htmlToImageResources } from './html-to-image-resources.mjs';
+import { htmlToImageFonts } from './html-to-image-fonts.mjs';
 // dist is generated; remove stale files before rebuilding the extension.
 await rm('dist', { recursive: true, force: true });
 await mkdir('dist', { recursive: true });
-await build({ entryPoints: ['src/content.js'], outfile: 'dist/content.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, loader: { '.css': 'text', '.svg': 'text', '.png': 'dataurl' }, legalComments: 'eof', plugins: [htmlToImageCsp, htmlToImageScroll, htmlToImageResources] });
+await build({ entryPoints: ['src/content.js'], outfile: 'dist/content.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, loader: { '.css': 'text', '.svg': 'text', '.png': 'dataurl' }, legalComments: 'eof', plugins: [htmlToImageCsp, htmlToImageScroll, htmlToImageResources, htmlToImageFonts] });
 await build({ entryPoints: ['src/map-buffer-entry.js'], outfile: 'dist/map-buffer.js', bundle: true, format: 'iife', target: 'chrome120', minify: true });
 await build({ entryPoints: ['src/image-worker.js'], outfile: 'dist/image-worker.js', bundle: true, format: 'iife', target: 'chrome120', minify: true });
 await build({ entryPoints: ['src/popup.js'], outfile: 'dist/popup.js', bundle: true, format: 'iife', target: 'chrome120', minify: true });
-await build({ entryPoints: ['src/frame.js'], outfile: 'dist/frame.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, plugins: [htmlToImageCsp] });
+await build({ entryPoints: ['src/frame.js'], outfile: 'dist/frame.js', bundle: true, format: 'iife', target: 'chrome120', minify: true, plugins: [htmlToImageCsp, htmlToImageFonts] });
 await cp('public/_locales', 'dist/_locales', { recursive: true });
 await cp('public/icons', 'dist/icons', { recursive: true });
 await copyFile('public/manifest.json', 'dist/manifest.json');

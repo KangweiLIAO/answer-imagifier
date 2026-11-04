@@ -19,7 +19,8 @@ export function createSnapshot(source, warnings, options, readStyle = source => 
     if (!(copy instanceof Element)) return;
     if (omitted.has(original)) { copy.remove(); return; }
     if (copy !== clone && !clone.contains(copy)) return;
-    if (original.matches('.katex-display,mjx-container[display="true"],math[display="block"]')) copy.setAttribute('data-export-display-math', '');
+    if (original.matches('.katex-display,mjx-container[display="true"],[data-d-component="math"][data-d-block]') ||
+        (original.matches('math[display="block"]') && !original.closest('.katex'))) copy.setAttribute('data-export-display-math', '');
     const math = original.closest('.katex, mjx-container, math');
     const svg = original.closest('svg');
     // Only math and existing vector charts need the host's layout styles.
@@ -29,6 +30,13 @@ export function createSnapshot(source, warnings, options, readStyle = source => 
       if (math) {
         copy.setAttribute('data-math', '');
         inheritMathForeground(copy);
+        // A block formula's computed width belongs to the host conversation.
+        // Let its outer box reflow at the export width; keep internal KaTeX
+        // struts, fractions and script geometry exactly as typeset.
+        if (original.matches('.katex,math')) {
+          copy.style.width = 'auto';
+          copy.style.height = 'auto';
+        }
       }
     }
     if (!math && !svg) copy.removeAttribute('class');

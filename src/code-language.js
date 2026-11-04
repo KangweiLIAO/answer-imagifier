@@ -25,6 +25,7 @@ export function normalizeCodeLanguage(value, supportsLanguage) {
 function candidatesFromAttributes(element) {
   if (!element?.getAttribute) return [];
   const candidates = [
+    element.getAttribute('data-code-language'),
     element.getAttribute('data-language'),
     element.getAttribute('data-lang'),
     element.getAttribute('lang'),
@@ -69,7 +70,7 @@ function nearbyHeaderText(container, code) {
 }
 
 export function detectCodeLanguage(container, code, supportsLanguage) {
-  const attributedElements = [container, code, ...(container.querySelectorAll?.('[data-language],[data-lang],[lang],[class*="language-"],[class*="lang-"]') || [])];
+  const attributedElements = [container, code, ...(container.querySelectorAll?.('[data-code-language],[data-language],[data-lang],[lang],[class*="language-"],[class*="lang-"]') || [])];
   const candidates = attributedElements.flatMap(candidatesFromAttributes);
   const block = container.closest?.('[data-markdown-copy="code-block"]');
   if (block) {

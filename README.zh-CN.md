@@ -17,7 +17,7 @@
   <img src="public/imgs/chart.png" alt="导出面板：左侧为外观、格式与排版设置，右侧为柱状图卡片的浅色预览" width="420">
 </p>
 
-本仓库 `public/manifest.json` 版本为 **1.3.7**，Chrome 网上应用店审核通过后上架版本随之更新。本版修复嵌套 checkbox 与标签上下堆叠、固定尺寸图标盒居中失效，并更新商店标题与简介。详细内容见 [更新日志](changelog.md)。产品向的英文说明见 [README.md](README.md)。
+本仓库 `public/manifest.json` 版本为 **1.3.8**，Chrome 网上应用店审核通过后上架版本随之更新。本版修复未登录 ChatGPT 的导出识别、代码语言标签、默认文件名、公式卡片、字体嵌入与公式宽度问题。详细内容见 [更新日志](changelog.md)。产品向的英文说明见 [README.md](README.md)。
 
 ## 从商店安装
 
@@ -68,7 +68,7 @@ npm test
 发布包从通过测试的 `dist/` 生成，解压后根目录直接包含 `manifest.json`：
 
 ```sh
-(cd dist && zip -r ../v1.3.7.zip . -x '*.DS_Store' '__MACOSX/*')
+(cd dist && zip -r ../v1.3.8.zip . -x '*.DS_Store' '__MACOSX/*')
 ```
 
 版本号需同步 `package.json`、`package-lock.json` 和 `public/manifest.json`，然后重新构建。新包与 `dist/` 内容及版本核对通过后，再删除旧包；当前构建和发布包保留在本机，不提交到 Git。
@@ -109,7 +109,7 @@ npm test
 
 ## 后续事项
 
-- 当前工作区已通过 128 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。2026-10-28 的嵌套 checkbox 修复与 2026-10-30 的固定尺寸图标盒修复已并入 1.3.7。
+- 当前工作区已通过 134 项自动化测试，并完成故障 DOM 的浅色／深色及窄版 PNG 本地回放；重载扩展后的真实 ChatGPT 页面验收仍待完成。本地回放不等于与原页面逐像素一致。2026-10-28 的嵌套 checkbox 修复与 2026-10-30 的固定尺寸图标盒修复已并入 1.3.7。
 
 - 新兼容性案例保留来源 DOM、当前交互状态、原页面参考图、导出设置和实际导出图；长期样本可放在本机 `samples/intelligent-ui/`，自动化回归结构放在 `tests/fixtures/`。没有完整参考图或真实页面复验时，明确记录 pending／partial／fail。
 
